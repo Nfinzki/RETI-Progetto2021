@@ -1,0 +1,8 @@
+# Registry port for RMI
+REGISTRY-PORT=7777
+
+# Host where the registry is
+REGISTRY-HOST=localhost
+
+# Service name for RMI
+RMI-SERVICE=REGISTER-SERVICE

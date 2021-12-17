@@ -1,0 +1,25 @@
+# Indirizzo del server
+SERVER-IP=192.168.1.2
+
+# Porta TCP del server
+TCP-PORT=6666
+
+# Porta UDP del server
+UDP-PORT=33333
+
+# Indirizzo di multicast
+MULTICAST-IP=239.255.32.32
+
+# Porta di multicast
+MCAST-PORT=44444
+
+# Host su cui si trova il registry
+REGISTRY-HOST=localhost
+
+# Porta del registry RMI
+REGISTRY-PORT=7777
+
+# Timeout della socket
+SOCKET-TIMEOUT=100000
+
+RMI-SERVICE=REGISTER-SERVICE
