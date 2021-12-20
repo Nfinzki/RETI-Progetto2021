@@ -28,7 +28,7 @@ public class Post {
         this.upvotes = upvotes;
         this.downvotes = downvotes;
 
-        if (idPost > nextIdPost) nextIdPost = idPost + 1;
+        if (idPost >= nextIdPost) nextIdPost = idPost + 1;
     }
 
     public int getIdPost() {
