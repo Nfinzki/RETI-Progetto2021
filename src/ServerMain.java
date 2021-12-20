@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerMain {
     private static String configurationFile = "serverConfig.txt";
@@ -21,21 +23,32 @@ public class ServerMain {
     private static String registerServiceName = "RMI-REGISTER";
     private static int socketTimeout = 60000;
 
+    private static Map<String, User> users;
+    private static Map<Integer, Post> posts;
+
     public static void main(String []args) {
-        Register p = new Register(usersFile, postsFile);
-        /*if (args.length == 1) configurationFile = args[0];
+        if (args.length == 1) configurationFile = args[0];
         if (args.length > 1) {
             System.err.println("Usage: ServerMain [config file]");
             System.exit(1);
         }
 
         parseConfigFile();
-        initializeRegisterService();*/
+
+        users = new ConcurrentHashMap<>();
+        posts = new ConcurrentHashMap<>();
+
+        RecoverState.readUsers(users, usersFile);
+        RecoverState.readPosts(posts, postsFile);
+
+        initializeRegisterService();
+
+        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts);
 
     }
 
     private static void initializeRegisterService() {
-        Register registerService = new Register(usersFile, postsFile);
+        SignUpService registerService = new SignUpService(users, posts);
         try {
             RegisterInterface registerStub = (RegisterInterface) UnicastRemoteObject.exportObject(registerService, 0);
 
