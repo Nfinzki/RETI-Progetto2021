@@ -1,15 +1,15 @@
 import com.google.gson.stream.JsonReader;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class RecoverState {
     public static void readPosts(Map<Integer, Post> posts, String postsFile) {
+        File file = new File(postsFile);
+        if (!file.isFile()) return;
+
         try (FileInputStream fileInputStream = new FileInputStream(postsFile);
              InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
              JsonReader jsonReader = new JsonReader(inputStreamReader)) {
@@ -65,6 +65,9 @@ public class RecoverState {
     }
 
     public static void readUsers(Map<String, User> users, String usersFile) {
+        File file = new File(usersFile);
+        if (!file.isFile()) return;
+
         try (FileInputStream fileInputStream = new FileInputStream(usersFile);
              InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
              JsonReader jsonReader = new JsonReader(inputStreamReader)) {
