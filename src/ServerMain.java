@@ -8,6 +8,8 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class ServerMain {
     private static String configurationFile = "serverConfig.txt";
+    private static final String usersFile = "users.json";
+    private static final String postsFile = "posts.json";
 
     private static String serverIP = "localhost";
     private static int tcpPort = 2222;
@@ -20,18 +22,20 @@ public class ServerMain {
     private static int socketTimeout = 60000;
 
     public static void main(String []args) {
-        if (args.length == 1) configurationFile = args[0];
+        Register p = new Register(usersFile, postsFile);
+        /*if (args.length == 1) configurationFile = args[0];
         if (args.length > 1) {
             System.err.println("Usage: ServerMain [config file]");
             System.exit(1);
         }
 
         parseConfigFile();
-        initializeRegisterService();
+        initializeRegisterService();*/
+
     }
 
     private static void initializeRegisterService() {
-        Register registerService = new Register();
+        Register registerService = new Register(usersFile, postsFile);
         try {
             RegisterInterface registerStub = (RegisterInterface) UnicastRemoteObject.exportObject(registerService, 0);
 
