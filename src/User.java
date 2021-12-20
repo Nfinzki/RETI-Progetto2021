@@ -37,7 +37,11 @@ public class User {
         this.blog = blog;
         this.wallet = wallet;
 
-        if (id > nextId) nextId = id + 1;
+        if (id >= nextId) nextId = id + 1;
+    }
+
+    public boolean comparePassword(String password) {
+        return this.password.equals(password);
     }
 
     public String toString() {
