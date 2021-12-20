@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class User {
@@ -9,7 +10,7 @@ public class User {
     private final String []tag;
     private final List<Integer> follower;
     private final List<Integer> followed;
-    private final List<Post> blog;
+    private final List<Integer> blog;
     private final Wallet wallet;
 
 
@@ -24,5 +25,21 @@ public class User {
         this.followed = new ArrayList<>();
         this.blog = new ArrayList<>();
         this.wallet = new Wallet();
+    }
+
+    public User(int id, String username, String password, String []tag, List<Integer> follower, List<Integer> followed, List<Integer> blog, Wallet wallet) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.tag = tag;
+        this.follower = follower;
+        this.followed = followed;
+        this.blog = blog;
+        this.wallet = wallet;
+    }
+
+    public String toString() {
+        String output = id + " " + username + " " + Arrays.toString(tag) + " " + follower + " " + followed + " " + blog + " " + wallet;
+        return output;
     }
 }

@@ -20,7 +20,21 @@ public class Post {
 
     }
 
+    public Post(int idPost, String postTitle, String postContent, List<String> comments, List<Integer> upvotes, List<Integer> downvotes) {
+        this.idPost = idPost;
+        this.postTitle = postTitle;
+        this.postContent = postContent;
+        this.comments = comments;
+        this.upvotes = upvotes;
+        this.downvotes = downvotes;
+    }
+
     public int getIdPost() {
         return idPost;
+    }
+
+    public String toString() {
+        String output = idPost + " " + postTitle + " " + postContent + " " + comments + " " + upvotes + " " + downvotes;
+        return output;
     }
 }

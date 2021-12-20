@@ -5,6 +5,10 @@ public class Wallet {
         this.wincoin = 0;
     }
 
+    public Wallet(double wincoin) {
+        this.wincoin = wincoin;
+    }
+
     public double getWincoin() {
         return wincoin;
     }
@@ -15,5 +19,9 @@ public class Wallet {
 
     public double toBTC() {
         return 0;
+    }
+
+    public String toString() {
+        return wincoin + "";
     }
 }
