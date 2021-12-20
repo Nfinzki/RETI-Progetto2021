@@ -27,6 +27,8 @@ public class Post {
         this.comments = comments;
         this.upvotes = upvotes;
         this.downvotes = downvotes;
+
+        if (idPost > nextIdPost) nextIdPost = idPost + 1;
     }
 
     public int getIdPost() {
@@ -34,7 +36,6 @@ public class Post {
     }
 
     public String toString() {
-        String output = idPost + " " + postTitle + " " + postContent + " " + comments + " " + upvotes + " " + downvotes;
-        return output;
+        return idPost + " " + postTitle + " " + postContent + " " + comments + " " + upvotes + " " + downvotes;
     }
 }

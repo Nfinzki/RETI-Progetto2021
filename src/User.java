@@ -36,10 +36,11 @@ public class User {
         this.followed = followed;
         this.blog = blog;
         this.wallet = wallet;
+
+        if (id > nextId) nextId = id + 1;
     }
 
     public String toString() {
-        String output = id + " " + username + " " + Arrays.toString(tag) + " " + follower + " " + followed + " " + blog + " " + wallet;
-        return output;
+        return id + " " + username + " " + password + " " + Arrays.toString(tag) + " " + follower + " " + followed + " " + blog + " " + wallet;
     }
 }
