@@ -5,7 +5,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -111,15 +110,14 @@ public class ClientMain {
 
         try {
             int result;
-            if ((result = register.register(arguments[1], Hash.bytesToHex(Hash.sha256(arguments[2])), tag)) != 0) {
+            if ((result = register.register(arguments[1], arguments[2], tag)) != 0) {
+                if (result == -1) System.err.println("Error server side");
                 if (result == 1) System.err.println("Password field is empty");
                 if (result == 2 || result == 3) System.err.println("Registration requires minimum 1 tag and maximum 5");
                 if (result == 4) System.err.println("User '" + arguments[1] + "' already registered");
             }
         } catch (RemoteException e) {
             System.err.println("Error while registering new user: " + e.getMessage());
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("Errore while hashing the password: " + e.getMessage());
         }
     }
 
