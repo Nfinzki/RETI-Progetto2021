@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class Register implements RegisterInterface{
@@ -14,12 +15,15 @@ public class Register implements RegisterInterface{
     private final String postsFile;
 
     public Register(String usersFile, String postsFile) {
-        this.users = new HashMap<>();
-        this.posts = new HashMap<>();
         this.usersFile = usersFile;
         this.postsFile = postsFile;
+
+        users = new HashMap<>();
+        posts = new HashMap<>();
         readUsers();
         readPosts();
+
+        //ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts);
     }
 
     public int register(String username, String password, List<String> tag) throws RemoteException {
@@ -31,7 +35,12 @@ public class Register implements RegisterInterface{
                 tags[i] = tag.get(i).toLowerCase();
             }
 
-            users.put(username, new User(username, password, tags));
+            try {
+                users.put(username, new User(username, Hash.bytesToHex(Hash.sha256(password)), tags));
+            } catch (NoSuchAlgorithmException e) {
+                System.err.println("Error while hashing the password: " + e.getMessage());
+                return -1; //Error server side
+            }
             return 0;
         } else {
             if (password.equals("")) return 1; //Password field is empty
@@ -42,52 +51,43 @@ public class Register implements RegisterInterface{
         }
     }
 
-    private Map<String, User> readUsers() {
-        Map<String, User> users = new HashMap<>();
-
+    private void readPosts() {
         try (FileInputStream fileInputStream = new FileInputStream(postsFile);
              InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
             JsonReader jsonReader = new JsonReader(inputStreamReader)) {
+                //Removes the '['
                 jsonReader.beginArray();
 
+                //Reads all the posts
                 while (jsonReader.hasNext()) {
+                    //Start post
                     jsonReader.beginObject();
 
-                    jsonReader.nextName();
-                    int id = jsonReader.nextInt();
+                    //Reads idPost
+                    int id = getIdFromJson(jsonReader);
 
-                    jsonReader.nextName();
-                    String postTitle = jsonReader.nextString();
+                    //Reads postTitle
+                    String postTitle = getStringFromJson(jsonReader);
 
-                    jsonReader.nextName();
-                    String postContent = jsonReader.nextString();
+                    //Reads postContent
+                    String postContent = getStringFromJson(jsonReader);
 
-                    jsonReader.nextName();
-                    jsonReader.beginArray();
-                    List<String> comments = new ArrayList<>();
-                    while (jsonReader.hasNext())
-                        comments.add(jsonReader.nextString());
-                    jsonReader.endArray();
+                    //Reads comment
+                    List<String> comments = getStringListFromJson(jsonReader);
 
-                    jsonReader.nextName();
-                    jsonReader.beginArray();
-                    List<Integer> upvotes = new ArrayList<>();
-                    while (jsonReader.hasNext())
-                        upvotes.add(jsonReader.nextInt());
-                    jsonReader.endArray();
+                    //Reads upvote
+                    List<Integer> upvotes = getIntegerListFromJson(jsonReader);
 
-                    jsonReader.nextName();
-                    jsonReader.beginArray();
-                    List<Integer> downvotes = new ArrayList<>();
-                    while (jsonReader.hasNext())
-                        downvotes.add(jsonReader.nextInt());
-                    jsonReader.endArray();
+                    //Reads downvote
+                    List<Integer> downvotes = getIntegerListFromJson(jsonReader);
 
+                    //End post
                     jsonReader.endObject();
 
+                    //Adds post to the server
                     posts.put(
                             id,
-                            new Post(
+                            new Post( //Create the post
                                     id,
                                     postTitle,
                                     postContent,
@@ -97,80 +97,58 @@ public class Register implements RegisterInterface{
                             )
                     );
                 }
+                //Removes the ']'
                 jsonReader.endArray();
-
-            System.out.println(posts);
         } catch (FileNotFoundException e) {
             System.err.println("Error while reading json file: " + e.getMessage());
-            return null;
         } catch (IOException e) {
             System.err.println("I/O Error: " + e.getMessage());
-            return null;
         }
-
-        return users;
     }
 
-    private Map<Integer, Post> readPosts() {
-        Map<String, User> users = new HashMap<>();
-
+    private void readUsers() {
         try (FileInputStream fileInputStream = new FileInputStream(usersFile);
              InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
              JsonReader jsonReader = new JsonReader(inputStreamReader)) {
+            //Removes the first '['
             jsonReader.beginArray();
 
+            //Reads all the users
             while (jsonReader.hasNext()) {
+                //Start user
                 jsonReader.beginObject();
 
-                jsonReader.nextName();
-                int id = jsonReader.nextInt();
+                //Reads id
+                int id = getIdFromJson(jsonReader);
 
-                jsonReader.nextName();
-                String username = jsonReader.nextString();
+                //Reads username
+                String username = getStringFromJson(jsonReader);
 
-                jsonReader.nextName();
-                String password = jsonReader.nextString();
+                //Reads password
+                String password = getStringFromJson(jsonReader);
 
-                jsonReader.nextName();
-                jsonReader.beginArray();
-                List<String> tagList = new ArrayList<>();
-                while (jsonReader.hasNext())
-                    tagList.add(jsonReader.nextString());
-                String []tags = tagList.toArray(new String[0]);
-                jsonReader.endArray();
+                //Reads tags
+                String[] tags = getStringListFromJson(jsonReader).toArray(new String[0]);
 
-                jsonReader.nextName();
-                jsonReader.beginArray();
-                List<Integer> follower = new ArrayList<>();
-                while (jsonReader.hasNext())
-                    follower.add(jsonReader.nextInt());
-                jsonReader.endArray();
+                //Reads followers
+                List<Integer> follower = getIntegerListFromJson(jsonReader);
 
-                jsonReader.nextName();
-                jsonReader.beginArray();
-                List<Integer> followed = new ArrayList<>();
-                while (jsonReader.hasNext())
-                    followed.add(jsonReader.nextInt());
-                jsonReader.endArray();
+                //Reads followed
+                List<Integer> followed = getIntegerListFromJson(jsonReader);
 
-                jsonReader.nextName();
-                jsonReader.beginArray();
-                List<Integer> blog = new ArrayList<>();
-                while (jsonReader.hasNext())
-                    blog.add(jsonReader.nextInt());
-                jsonReader.endArray();
+                //Reads blog
+                List<Integer> blog = getIntegerListFromJson(jsonReader);
 
-                jsonReader.nextName();
-                jsonReader.beginObject();
-                jsonReader.nextName();
-                double wincoin = jsonReader.nextDouble();
+                //Read wallet
+                double wincoin = getWincoinFromJson(jsonReader);
+
+                //End user
                 jsonReader.endObject();
 
-                jsonReader.endObject();
-
+                //Add the user to the server
                 users.put(
                         username,
-                        new User(
+                        new User( //Creates the user
                                 id,
                                 username,
                                 password,
@@ -182,17 +160,55 @@ public class Register implements RegisterInterface{
                         )
                 );
             }
+            //Removes ']'
             jsonReader.endArray();
-
-            System.out.println(users);
         } catch (FileNotFoundException e) {
             System.err.println("Error while reading json file: " + e.getMessage());
-            return null;
         } catch (IOException e) {
             System.err.println("I/O Error: " + e.getMessage());
-            return null;
         }
+    }
 
-        return posts;
+    private double getWincoinFromJson(JsonReader jsonReader) throws IOException {
+        jsonReader.nextName();
+        //Removes '{'
+        jsonReader.beginObject();
+        jsonReader.nextName();
+        double wincoin = jsonReader.nextDouble();
+        jsonReader.endObject(); //Removes '}'
+        return wincoin;
+    }
+
+    private List<Integer> getIntegerListFromJson(JsonReader jsonReader) throws IOException {
+        jsonReader.nextName();
+        //Removes '['
+        jsonReader.beginArray();
+        List<Integer> follower = new ArrayList<>();
+        while (jsonReader.hasNext()) //Reads all the elements in the array
+            follower.add(jsonReader.nextInt());
+        jsonReader.endArray(); //Removes the ']'
+        return follower;
+    }
+
+    private List<String> getStringListFromJson(JsonReader jsonReader) throws IOException {
+        jsonReader.nextName();
+        //Removes the '['
+        jsonReader.beginArray();
+        List<String> stringList = new ArrayList<>();
+        while (jsonReader.hasNext()) //Reads all the elements in the array
+            stringList.add(jsonReader.nextString());
+        jsonReader.endArray(); //Removes the ']'
+        return stringList;
+    }
+
+    private String getStringFromJson(JsonReader jsonReader) throws IOException {
+        jsonReader.nextName();
+        return jsonReader.nextString();
+    }
+
+    private int getIdFromJson(JsonReader jsonReader) throws IOException {
+        //Reads id
+        jsonReader.nextName();
+        return jsonReader.nextInt();
     }
 }
