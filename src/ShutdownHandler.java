@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  *	Handler for termination that saves the state of the server
@@ -21,22 +22,29 @@ public class ShutdownHandler {
     private final String postsFile;
     private final Map<String, User> users;
     private final Map<Integer, Post> posts;
+    private final ThreadPoolExecutor threadPool;
     //TODO Aggiungere i thread da interrompere
 
-    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts) {
+    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool) {
         this.usersFile = usersFile;
         this.postsFile = postsFile;
         this.users = users;
         this.posts = posts;
+        this.threadPool = threadPool;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
+                threadPool.shutdown();
+
                 //Saves the server state
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 serverStateToJson(gson, usersFile, users);
                 serverStateToJson(gson, postsFile, posts);
+
+                if (!threadPool.isTerminated()) threadPool.shutdownNow();
             }
         });
+
     }
 
     private <K, V> void serverStateToJson(Gson gson, String jsonFile, Map<K, V> map) {
