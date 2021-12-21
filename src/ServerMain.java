@@ -1,12 +1,19 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
+import java.util.concurrent.*;
 
 public class ServerMain {
     private static String configurationFile = "serverConfig.txt";
@@ -22,9 +29,15 @@ public class ServerMain {
     private static int registryPort = 55555;
     private static String registerServiceName = "RMI-REGISTER";
     private static int socketTimeout = 60000;
+    private static int bufferSize = 16 * 1024;
+
+    private static int corePoolSize = 5;
+    private static int maximumPoolSize = 15;
+    private static int keepAliveTime = 30000;
 
     private static Map<String, User> users;
     private static Map<Integer, Post> posts;
+    private static Set<Registable> readyToBeRegistered;
 
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
@@ -38,13 +51,89 @@ public class ServerMain {
         users = new ConcurrentHashMap<>();
         posts = new ConcurrentHashMap<>();
 
+        readyToBeRegistered = ConcurrentHashMap.newKeySet();
+
         RecoverState.readUsers(users, usersFile);
         RecoverState.readPosts(posts, postsFile);
 
         initializeRegisterService();
 
-        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts);
+        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
+        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool);
+        multiplexChannels(threadPool);
+    }
+
+    private static void multiplexChannels(Executor threadPool) {
+        try (ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+             ServerSocket serverSocket = serverSocketChannel.socket();
+             Selector selector = Selector.open()) {
+
+            serverSocket.bind(new InetSocketAddress(serverIP, tcpPort)); //Associa il socket alla porta
+            serverSocketChannel.configureBlocking(false); //Imposta la modalità non bloccante
+            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT); //Registra il canale sul Selector
+
+            System.out.println("Server started");
+
+            while (true) {
+                //Attesa di una richiesta
+                selector.select();
+
+                if (!readyToBeRegistered.isEmpty()) {
+                    for (Registable r : readyToBeRegistered) {
+                        try {
+                            r.getClientChannel().register(selector, r.getOperation(), r.getByteBuffer());
+                        } catch (ClosedChannelException e) {
+                            System.err.println("Error while registering a channel: " + e.getMessage());
+                            break;
+                        }
+                        readyToBeRegistered.remove(r);
+                    }
+                }
+
+                //Recupera le chiavi pronte
+                Set<SelectionKey> readyKeys = selector.selectedKeys();
+                Iterator<SelectionKey> iterator = readyKeys.iterator();
+
+                while (iterator.hasNext()) {
+                    //Recupera la chiave
+                    SelectionKey key = iterator.next();
+                    iterator.remove();
+
+                    try {
+                        if (key.isAcceptable()) { //Nuova connessione
+                            ServerSocketChannel server = (ServerSocketChannel) key.channel(); //Recupera il channel
+                            SocketChannel client = server.accept(); //Accetta la connessione del client
+                            System.out.println(client);
+
+                            client.configureBlocking(false); //Imposta il canale in modalità non bloccante
+                            SelectionKey clientKey = client.register( //Registra il canale sul Selector in lettura
+                                    selector,
+                                    SelectionKey.OP_READ
+                            );
+
+                            //Alloca il buffer e fa l'attach con il canale
+                            ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
+                            clientKey.attach(byteBuffer);
+
+                        } else if (key.isReadable()) { //Il channel è pronto in lettura
+                            key.cancel();
+                            threadPool.execute(new ThreadWorker(key, users, posts, readyToBeRegistered, SelectionKey.OP_READ, selector));
+                        } else if (key.isWritable()) { //Il client è pronto in scrittura
+                            key.cancel();
+                            threadPool.execute(new ThreadWorker(key, users, posts, readyToBeRegistered, SelectionKey.OP_WRITE, selector));
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Error serving requests: " + e.getMessage());
+                        key.cancel();
+                        key.channel().close();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("IOException: " + e.getMessage());
+            System.exit(1);
+        }
     }
 
     private static void initializeRegisterService() {
@@ -86,6 +175,12 @@ public class ServerMain {
                     case "SOCKET-TIMEOUT" -> socketTimeout = Integer.parseInt(line.split("=")[1]);
 
                     case "RMI-SERVICE" -> registerServiceName = line.split("=")[1];
+
+                    case "POOL-SIZE" -> corePoolSize = Integer.parseInt(line.split("=")[1]);
+
+                    case "MAX-POOL-SIZE" -> maximumPoolSize = Integer.parseInt(line.split("=")[1]);
+
+                    case "KEEPALIVE" -> keepAliveTime = Integer.parseInt(line.split("=")[1]);
                 }
             }
 
