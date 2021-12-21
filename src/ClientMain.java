@@ -1,6 +1,10 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -16,6 +20,11 @@ public class ClientMain {
     private static int registryPort = 11111; //TODO Mettere una porta di default più significativa
     private static String registryHost = "localhost";
     private static String registerServiceName = "RMI-REGISTER";
+    private static String serverIP = "localhost";
+    private static int tcpPort = 2222;
+    private static int bufferSize = 16 * 1024;
+    private static SocketChannel socketChannel = null;
+    private static ByteBuffer buffer;
 
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
@@ -25,6 +34,7 @@ public class ClientMain {
         }
 
         parseConfigFile();
+        buffer = ByteBuffer.allocate(bufferSize);
         RegisterInterface register = getRemoteRegisterObject();
 
         Scanner cliScanner = new Scanner(System.in);
@@ -38,22 +48,29 @@ public class ClientMain {
             String []arguments = command.split(" ");
             switch (arguments[0]) {
                 case "register" : {
+                    if (socketChannel != null) {
+                        System.err.println("There's a user already logged");
+                        break;
+                    }
                     registerUser(register, arguments);
                     break;
                 }
-                case "login" : break;
+                case "login" : {
+                    socketChannel = loginUser(command);
+                    break;
+                }
                 case "logout" : break;
                 case "list" : {
-                    if (arguments.length != 2 || (!arguments[1].equals("users") && !arguments[1].equals("following"))) {
+                    if (arguments.length != 2 || (!arguments[1].equals("users") && !arguments[1].equals("following") && !arguments[1].equals("followers"))) {
                         System.err.println("Invalid command '" + command + "'. Use 'list users' or 'list following'");
                         break;
                     }
 
                     if (arguments[1].equals("users")) { //list users
 
-                    } else { //list following
+                    } else if (arguments[1].equals("followers")) { //list followers
 
-                    }
+                    } //list following
                     break;
                 }
                 case "follow" : break;
@@ -96,6 +113,64 @@ public class ClientMain {
                 }
                 default: System.err.println("Unknown command: " + command);
             }
+        }
+    }
+
+    private static void sendRequest(String command) throws IOException{
+        if (socketChannel == null) {
+            System.err.println("No user is logged in");
+            return;
+        }
+
+        buffer.clear();
+
+        //Puts the command length
+        buffer.putInt(command.length());
+        //Puts the command
+        buffer.put(command.getBytes());
+
+        //Sets the buffer ready for writing to the channel
+        buffer.flip();
+        //Writes to the channel
+        socketChannel.write(buffer);
+    }
+
+    private static SocketChannel loginUser(String command) {
+        if (command.split(" ").length != 3) {
+            System.err.println("Usage: login username password");
+            return null;
+        }
+
+        //Checks if a user is already logged in
+        if (socketChannel != null) {
+            System.err.println("There's a user already logged");
+            return socketChannel;
+        }
+
+        try {
+            //Connects to the server
+            socketChannel = SocketChannel.open(new InetSocketAddress(serverIP, tcpPort));
+
+            //Sends request to the server
+            sendRequest(command);
+
+            buffer.clear();
+            //Reads the response
+            socketChannel.read(buffer);
+            //Sets the buffer ready to be read
+            buffer.flip();
+            int responseId = buffer.getInt();
+
+            if (responseId == 0)
+                System.out.println("> Logged correctly");
+            else
+                System.err.println("Username or password not correct");
+
+            //Returns the socketChannel
+            return socketChannel;
+        } catch (IOException e) {
+            System.err.println("Error during login, please try again (" + e.getMessage() + ")");
+            return null;
         }
     }
 
@@ -150,6 +225,10 @@ public class ClientMain {
                     case "REGISTRY-HOST" -> registryHost = line.split("=")[1];
 
                     case "RMI-SERVICE" -> registerServiceName = line.split("=")[1];
+
+                    case "SERVER-IP" -> serverIP = line.split("=")[1];
+
+                    case "TCP-PORT" -> tcpPort = Integer.parseInt(line.split("=")[1]);
                     //TODO Aggiungere ulteriori case
                 }
             }
