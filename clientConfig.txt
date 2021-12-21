@@ -6,3 +6,7 @@ REGISTRY-HOST=localhost
 
 # Service name for RMI
 RMI-SERVICE=REGISTER-SERVICE
+
+SERVER-IP=localhost
+
+TCP-PORT=6666

@@ -1,5 +1,5 @@
 # Indirizzo del server
-SERVER-IP=192.168.1.2
+SERVER-IP=localhost
 
 # Porta TCP del server
 TCP-PORT=6666

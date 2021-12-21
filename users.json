@@ -1,69 +1,13 @@
 [
 {
-  "id": 2,
-  "username": "giulia",
-  "password": "fheui43",
-  "tag": [
-    "rompere le palle",
-    "arte povera"
-  ],
-  "follower": [
-    123,
-    2,
-    1,
-    4
-  ],
-  "followed": [
-    6,
-    42
-  ],
-  "blog": [
-    7,
-    123,
-    5,
-    87
-  ],
-  "wallet": {
-    "wincoin": 32.1
-  }
-},
-{
-  "id": 1,
+  "id": 0,
   "username": "nfinzki",
-  "password": "fdsj3r32ojf234r2wf",
+  "password": "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1",
   "tag": [
     "musica",
-    "arte",
-    "prova"
-  ],
-  "follower": [
-    123,
-    432,
-    65,
-    76
-  ],
-  "followed": [
-    432,
-    42
-  ],
-  "blog": [
-    432,
-    123,
-    65,
-    87
-  ],
-  "wallet": {
-    "wincoin": 432.0
-  }
-},
-{
-  "id": 3,
-  "username": "tommaso",
-  "password": "4084a32b9bba4b4a03d06f24edf285c34ebf98ee44d6772c05bda9560a7bc3b2",
-  "tag": [
-    "musica",
-    "film",
-    "spiderman"
+    "sport",
+    "tecnologia",
+    "film"
   ],
   "follower": [],
   "followed": [],
