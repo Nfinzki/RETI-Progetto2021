@@ -1,6 +1,22 @@
 [
 {
-  "id": 1,
+  "username": "utente",
+  "password": "2c7f3b7185d9ad24a498661cb137b3ed7fd8cd912f8ba678c38e0c536a2925f4",
+  "tag": [
+    "sport",
+    "investimenti",
+    "economia"
+  ],
+  "follower": [],
+  "followed": [
+    "nfinzki"
+  ],
+  "blog": [],
+  "wallet": {
+    "wincoin": 0.0
+  }
+},
+{
   "username": "luca",
   "password": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
   "tag": [
@@ -16,7 +32,6 @@
   }
 },
 {
-  "id": 3,
   "username": "Stefano",
   "password": "35a9e381b1a27567549b5f8a6f783c167ebf809f1c4d6a9e367240484d8ce281",
   "tag": [
@@ -30,7 +45,6 @@
   }
 },
 {
-  "id": 2,
   "username": "mario",
   "password": "b3a8e0e1f9ab1bfe3a36f231f676f78bb30a519d2b21e6c530c0eee8ebb4a5d0",
   "tag": [
@@ -46,22 +60,21 @@
   }
 },
 {
-  "id": 0,
   "username": "nfinzki",
-  "password": "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1",
+  "password": "9979dd6df879e4f407fdf2823775c77ba2611c8d8e8a29bf0461d87aef5acaeb",
   "tag": [
     "musica",
     "sport",
     "tecnologia",
     "film"
   ],
-  "follower": [],
+  "follower": [
+    "utente"
+  ],
   "followed": [],
   "blog": [
     0,
-    1,
-    2,
-    2
+    1
   ],
   "wallet": {
     "wincoin": 0.0
