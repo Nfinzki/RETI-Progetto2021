@@ -1,3 +1,29 @@
 [
-
+{
+  "idPost": 0,
+  "authorId": 0,
+  "postTitle": "Primo post",
+  "postContent": "Questo sarebbe il mio primo post",
+  "comments": [],
+  "upvotes": [],
+  "downvotes": []
+},
+{
+  "idPost": 1,
+  "authorId": 0,
+  "postTitle": "Il mio secondo post",
+  "postContent": "Ci sto iniziando a prendere gusto",
+  "comments": [],
+  "upvotes": [],
+  "downvotes": []
+},
+{
+  "idPost": 2,
+  "authorId": 0,
+  "postTitle": "Prova",
+  "postContent": "Post di prova",
+  "comments": [],
+  "upvotes": [],
+  "downvotes": []
+}
 ]
