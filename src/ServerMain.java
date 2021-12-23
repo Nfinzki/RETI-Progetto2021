@@ -3,13 +3,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +37,7 @@ public class ServerMain {
 
     private static Map<String, User> users;
     private static Map<Integer, Post> posts;
+    private static Map<String, Socket> loggedUsers;
     private static Set<Registable> readyToBeRegistered;
 
     public static void main(String []args) {
@@ -50,6 +51,7 @@ public class ServerMain {
 
         users = new ConcurrentHashMap<>();
         posts = new ConcurrentHashMap<>();
+        loggedUsers = new ConcurrentHashMap<>();
 
         readyToBeRegistered = ConcurrentHashMap.newKeySet();
 
@@ -79,16 +81,14 @@ public class ServerMain {
                 //Attesa di una richiesta
                 selector.select();
 
-                if (!readyToBeRegistered.isEmpty()) {
-                    for (Registable r : readyToBeRegistered) {
-                        try {
-                            r.getClientChannel().register(selector, r.getOperation(), r.getByteBuffer());
-                        } catch (ClosedChannelException e) {
-                            System.err.println("Error while registering a channel: " + e.getMessage());
-                            break;
-                        }
-                        readyToBeRegistered.remove(r);
+                for (Registable r : readyToBeRegistered) {
+                    try {
+                        r.getClientChannel().register(selector, r.getOperation(), r.getByteBuffer());
+                    } catch (ClosedChannelException e) {
+                        System.err.println("Error while registering a channel: " + e.getMessage());
+                        break;
                     }
+                    readyToBeRegistered.remove(r);
                 }
 
                 //Recupera le chiavi pronte
@@ -118,10 +118,10 @@ public class ServerMain {
 
                         } else if (key.isReadable()) { //Il channel è pronto in lettura
                             key.cancel();
-                            threadPool.execute(new ThreadWorker(key, users, posts, readyToBeRegistered, SelectionKey.OP_READ, selector));
+                            threadPool.execute(new ReaderWorker(key, users, posts, loggedUsers, readyToBeRegistered, selector));
                         } else if (key.isWritable()) { //Il client è pronto in scrittura
                             key.cancel();
-                            threadPool.execute(new ThreadWorker(key, users, posts, readyToBeRegistered, SelectionKey.OP_WRITE, selector));
+                            threadPool.execute(new WriterWorker(key, readyToBeRegistered, selector));
                         }
                     } catch (IOException e) {
                         System.err.println("Error serving requests: " + e.getMessage());
