@@ -40,6 +40,9 @@ public class ServerMain {
     private static Map<String, Socket> loggedUsers;
     private static Set<Registable> readyToBeRegistered;
 
+    private static CallbackHandler callbackHandler;
+    private static String callbackHandlerService = "RMI-FOLLOWER-CALLBACK";
+
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
         if (args.length > 1) {
@@ -58,6 +61,7 @@ public class ServerMain {
         RecoverState.readUsers(users, usersFile);
         RecoverState.readPosts(posts, postsFile);
 
+        callbackHandler = new CallbackHandler();
         initializeRegisterService();
 
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
@@ -118,7 +122,7 @@ public class ServerMain {
 
                         } else if (key.isReadable()) { //Il channel è pronto in lettura
                             key.cancel();
-                            threadPool.execute(new ReaderWorker(key, users, posts, loggedUsers, readyToBeRegistered, selector));
+                            threadPool.execute(new ReaderWorker(key, users, posts, loggedUsers, callbackHandler, readyToBeRegistered, selector));
                         } else if (key.isWritable()) { //Il client è pronto in scrittura
                             key.cancel();
                             threadPool.execute(new WriterWorker(key, readyToBeRegistered, selector));
@@ -140,10 +144,13 @@ public class ServerMain {
         SignUpService registerService = new SignUpService(users, posts);
         try {
             RegisterInterface registerStub = (RegisterInterface) UnicastRemoteObject.exportObject(registerService, 0);
+            CallbackHandlerInterface callbackHandlerStub = (CallbackHandlerInterface) UnicastRemoteObject.exportObject(callbackHandler, 0);
 
             LocateRegistry.createRegistry(registryPort);
             Registry registry = LocateRegistry.getRegistry(registryPort);
+
             registry.rebind(registerServiceName, registerStub);
+            registry.rebind(callbackHandlerService, callbackHandlerStub);
         } catch (RemoteException e) {
             System.err.println("Error while exporting Register object: " + e.getMessage());
             System.exit(1);
