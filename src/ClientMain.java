@@ -72,7 +72,8 @@ public class ClientMain {
                     }
 
                     if (arguments[1].equals("users")) { //list users
-
+                        listUsers(command);
+                        break;
                     } else if (arguments[1].equals("followers")) { //list followers
 
                     } //list following
@@ -81,7 +82,10 @@ public class ClientMain {
                 case "follow" : break;
                 case "unfollow" : break;
                 case "blog" : break;
-                case "post" : break;
+                case "post" : {
+                    createPost(command);
+                    break;
+                }
                 case "show" : {
                     if (arguments.length != 2 || (!arguments[1].equals("feed") && !arguments[1].equals("post"))) {
                         System.err.println("Invalid command '" + command + "'. Use 'show feed' or 'show post'");
@@ -158,7 +162,7 @@ public class ClientMain {
             int responseId = buffer.getInt();
 
             if (responseId == 0) {
-                System.out.println(currentLoggedUser + " logged out");
+                System.out.println("< " + currentLoggedUser + " logged out");
                 currentLoggedUser = null;
                 socketChannel.close();
                 socketChannel = null;
@@ -212,6 +216,70 @@ public class ClientMain {
         }
     }
 
+    private static void listUsers(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            sendRequest(command + " " + currentLoggedUser);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == -1) {
+                System.err.println("< Invalid command. Usage: list users");
+                return;
+            }
+
+            if (responseId == 0) {
+                int resultLen = buffer.getInt();
+                byte []resultByte = new byte[resultLen];
+                buffer.get(resultByte);
+                String result = new String(resultByte);
+
+                String []users = result.split(" \n");
+                System.out.println("<\tUser\t|\tTag\t");
+                System.out.println("<---------------------------------");
+                for (String user : users) {
+                    System.out.println("<\t" + user + "\t\n");
+                }
+
+            } else {
+                System.err.println("There is no user logged in");
+            }
+        } catch (IOException e) {
+            System.err.println("Error during communication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void createPost(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        String request = command + " " + currentLoggedUser;
+        try {
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) System.out.println("< Post created correctly");
+            if (responseId == 1) System.err.println("< There is no user logged in");
+            if (responseId == 2) System.err.println("< Invalid post arguments. Title must have less then 20 characters, the content mush have less then 500 characters");
+
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
     //Registers a new user to WINSOME
     private static void registerUser(RegisterInterface register, String[] arguments) {
         if (arguments.length > 8) {
@@ -224,11 +292,12 @@ public class ClientMain {
         try {
             int result;
             if ((result = register.register(arguments[1], arguments[2], tag)) != 0) {
-                if (result == -1) System.err.println("Error server side");
-                if (result == 1) System.err.println("Password field is empty");
-                if (result == 2 || result == 3) System.err.println("Registration requires minimum 1 tag and maximum 5");
-                if (result == 4) System.err.println("User '" + arguments[1] + "' already registered");
+                if (result == -1) System.err.println("< Error server side");
+                if (result == 1) System.err.println("< Password field is empty");
+                if (result == 2 || result == 3) System.err.println("< Registration requires minimum 1 tag and maximum 5");
+                if (result == 4) System.err.println("< User '" + arguments[1] + "' already registered");
             }
+            System.out.println("< " + arguments[1] + " registered correctly");
         } catch (RemoteException e) {
             System.err.println("Error while registering new user: " + e.getMessage());
         }
