@@ -19,7 +19,7 @@ public class SignUpService implements RegisterInterface{
             }
 
             try {
-                if (users.putIfAbsent(username, new User(username, Hash.bytesToHex(Hash.sha256(password)), tags)) != null)
+                if (users.putIfAbsent(username, new User(username, Hash.bytesToHex(Hash.sha256(username + password)), tags)) != null)
                     return 4; //User already registered
 
                 return 0;
