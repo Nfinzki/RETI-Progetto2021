@@ -24,6 +24,9 @@ public class RecoverState {
                 //Reads idPost
                 int id = getIdFromJson(jsonReader);
 
+                //Reads authorId
+                int authorId = getIdFromJson(jsonReader);
+
                 //Reads postTitle
                 String postTitle = getStringFromJson(jsonReader);
 
@@ -47,6 +50,7 @@ public class RecoverState {
                         id,
                         new Post( //Create the post
                                 id,
+                                authorId,
                                 postTitle,
                                 postContent,
                                 comments,
