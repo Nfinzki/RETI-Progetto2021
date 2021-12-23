@@ -1,9 +1,8 @@
 import com.google.gson.stream.JsonReader;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RecoverState {
     public static void readPosts(Map<Integer, Post> posts, String postsFile) {
@@ -22,10 +21,10 @@ public class RecoverState {
                 jsonReader.beginObject();
 
                 //Reads idPost
-                int id = getIdFromJson(jsonReader);
+                int id = getIntegerFromJson(jsonReader);
 
                 //Reads authorId
-                int authorId = getIdFromJson(jsonReader);
+                String authorId = getStringFromJson(jsonReader);
 
                 //Reads postTitle
                 String postTitle = getStringFromJson(jsonReader);
@@ -37,10 +36,10 @@ public class RecoverState {
                 List<String> comments = getStringListFromJson(jsonReader);
 
                 //Reads upvote
-                List<Integer> upvotes = getIntegerListFromJson(jsonReader);
+                Set<String> upvotes = getStringSetFromJson(jsonReader);
 
                 //Reads downvote
-                List<Integer> downvotes = getIntegerListFromJson(jsonReader);
+                Set<String> downvotes = getStringSetFromJson(jsonReader);
 
                 //End post
                 jsonReader.endObject();
@@ -84,7 +83,7 @@ public class RecoverState {
                 jsonReader.beginObject();
 
                 //Reads id
-                int id = getIdFromJson(jsonReader);
+                //int id = getIntegerFromJson(jsonReader);
 
                 //Reads username
                 String username = getStringFromJson(jsonReader);
@@ -96,13 +95,13 @@ public class RecoverState {
                 String[] tags = getStringListFromJson(jsonReader).toArray(new String[0]);
 
                 //Reads followers
-                List<Integer> follower = getIntegerListFromJson(jsonReader);
+                Set<String> follower = getStringSetFromJson(jsonReader);
 
                 //Reads followed
-                List<Integer> followed = getIntegerListFromJson(jsonReader);
+                Set<String> followed = getStringSetFromJson(jsonReader);
 
                 //Reads blog
-                List<Integer> blog = getIntegerListFromJson(jsonReader);
+                Set<Integer> blog = getIntegerSetFromJson(jsonReader);
 
                 //Read wallet
                 double wincoin = getWincoinFromJson(jsonReader);
@@ -114,7 +113,7 @@ public class RecoverState {
                 users.put(
                         username,
                         new User( //Creates the user
-                                id,
+                                //id,
                                 username,
                                 password,
                                 tags,
@@ -144,11 +143,22 @@ public class RecoverState {
         return wincoin;
     }
 
-    private static List<Integer> getIntegerListFromJson(JsonReader jsonReader) throws IOException {
+    private static Set<String> getStringSetFromJson(JsonReader jsonReader) throws IOException {
         jsonReader.nextName();
         //Removes '['
         jsonReader.beginArray();
-        List<Integer> follower = new ArrayList<>();
+        Set<String> follower = ConcurrentHashMap.newKeySet();
+        while (jsonReader.hasNext()) //Reads all the elements in the array
+            follower.add(jsonReader.nextString());
+        jsonReader.endArray(); //Removes the ']'
+        return follower;
+    }
+
+    private static Set<Integer> getIntegerSetFromJson(JsonReader jsonReader) throws IOException {
+        jsonReader.nextName();
+        //Removes '['
+        jsonReader.beginArray();
+        Set<Integer> follower = ConcurrentHashMap.newKeySet();
         while (jsonReader.hasNext()) //Reads all the elements in the array
             follower.add(jsonReader.nextInt());
         jsonReader.endArray(); //Removes the ']'
@@ -171,7 +181,7 @@ public class RecoverState {
         return jsonReader.nextString();
     }
 
-    private static int getIdFromJson(JsonReader jsonReader) throws IOException {
+    private static int getIntegerFromJson(JsonReader jsonReader) throws IOException {
         //Reads id
         jsonReader.nextName();
         return jsonReader.nextInt();
