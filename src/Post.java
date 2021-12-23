@@ -1,30 +1,32 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Post {
     private static int nextIdPost = 0;
     private final int idPost;
-    private final int authorId;
+    private final String author;
     private final String postTitle;
     private final String postContent;
     private final List<String> comments;
-    private final List<Integer> upvotes;
-    private final List<Integer> downvotes;
+    private final Set<String> upvotes;
+    private final Set<String> downvotes;
 
-    public Post(int authorId, String postTitle, String postContent) {
+    public Post(String author, String postTitle, String postContent) {
         this.idPost = nextIdPost++;
-        this.authorId = authorId;
+        this.author = author;
         this.postTitle = postTitle;
         this.postContent = postContent;
         comments = new ArrayList<>();
-        upvotes = new ArrayList<>();
-        downvotes = new ArrayList<>();
+        upvotes = ConcurrentHashMap.newKeySet();
+        downvotes = ConcurrentHashMap.newKeySet();
 
     }
 
-    public Post(int idPost, int authorId, String postTitle, String postContent, List<String> comments, List<Integer> upvotes, List<Integer> downvotes) {
+    public Post(int idPost, String author, String postTitle, String postContent, List<String> comments, Set<String> upvotes, Set<String> downvotes) {
         this.idPost = idPost;
-        this.authorId = authorId;
+        this.author = author;
         this.postTitle = postTitle;
         this.postContent = postContent;
         this.comments = comments;
@@ -36,6 +38,26 @@ public class Post {
 
     public int getIdPost() {
         return idPost;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public boolean addUpvote(String user) {
+        return upvotes.add(user);
+    }
+
+    public boolean addDownvote(String user) {
+        return downvotes.add(user);
+    }
+
+    public boolean containsUpvote(String user) {
+        return upvotes.contains(user);
+    }
+
+    public boolean containsDownvote(String user) {
+        return downvotes.contains(user);
     }
 
     public String toString() {
