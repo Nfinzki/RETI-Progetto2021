@@ -6,17 +6,17 @@ Funzionalità da sviluppare:
 - [x] login
 - [x] logout
 - [x] listUsers
-- [ ] listFollowers
+- [x] listFollowers
 - [ ] listFollowing
-- [ ] followUser
-- [ ] unfollowUser
+- [x] followUser
+- [x] unfollowUser
 - [ ] viewBlog
 - [x] createPost
 - [ ] showFeed
 - [ ] showPost
-- [ ] deletePost
+- [x] deletePost
 - [ ] rewinPost
-- [ ] ratePost
+- [x] ratePost
 - [ ] addComment
 - [ ] getWallet
 - [ ] getWalletBitcoin
