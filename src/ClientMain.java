@@ -2,9 +2,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -25,6 +25,8 @@ public class ClientMain {
     private static int bufferSize = 16 * 1024;
     private static SocketChannel socketChannel = null;
     private static ByteBuffer buffer;
+
+    private static String currentLoggedUser = null;
 
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
@@ -59,7 +61,10 @@ public class ClientMain {
                     socketChannel = loginUser(command);
                     break;
                 }
-                case "logout" : break;
+                case "logout" : {
+                    logout();
+                    break;
+                }
                 case "list" : {
                     if (arguments.length != 2 || (!arguments[1].equals("users") && !arguments[1].equals("following") && !arguments[1].equals("followers"))) {
                         System.err.println("Invalid command '" + command + "'. Use 'list users' or 'list following'");
@@ -135,15 +140,46 @@ public class ClientMain {
         socketChannel.write(buffer);
     }
 
+    private static void logout() {
+        if (currentLoggedUser == null) {
+            System.err.println("< There are no user logged");
+            return;
+        }
+
+        String request = "logout " + currentLoggedUser;
+        try {
+            sendRequest(request);
+
+            buffer.clear();
+            //Reads the response
+            socketChannel.read(buffer);
+            //Sets the buffer ready to be read
+            buffer.flip();
+            int responseId = buffer.getInt();
+
+            if (responseId == 0) {
+                System.out.println(currentLoggedUser + " logged out");
+                currentLoggedUser = null;
+                socketChannel.close();
+                socketChannel = null;
+            } else {
+                System.err.println("< " + currentLoggedUser + " is not logged in");
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error during logout (" + e.getMessage() + ")");
+        }
+    }
+
     private static SocketChannel loginUser(String command) {
         if (command.split(" ").length != 3) {
-            System.err.println("Usage: login username password");
+            System.err.println("< Usage: login username password");
             return null;
         }
 
         //Checks if a user is already logged in
         if (socketChannel != null) {
-            System.err.println("There's a user already logged");
+            System.err.println("< There's a user already logged. He needs to logout");
             return socketChannel;
         }
 
@@ -161,10 +197,12 @@ public class ClientMain {
             buffer.flip();
             int responseId = buffer.getInt();
 
-            if (responseId == 0)
-                System.out.println("> Logged correctly");
-            else
-                System.err.println("Username or password not correct");
+            if (responseId == 0) {
+                System.out.println("< " + command.split(" ")[1] + " logged in");
+                currentLoggedUser = command.split(" ")[1];
+            }
+            if (responseId == 1) System.err.println("< Username or password not correct");
+            if (responseId == 2) System.err.println("< Already logged on another terminal");
 
             //Returns the socketChannel
             return socketChannel;
@@ -199,7 +237,7 @@ public class ClientMain {
     //Retrieving the remote object for the registration process
     private static RegisterInterface getRemoteRegisterObject() {
         try {
-            Registry registry = LocateRegistry.getRegistry(registryPort);
+            Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
             return (RegisterInterface) registry.lookup(registerServiceName);
         } catch (RemoteException e) {
             System.err.println("Error with the remote object: " + e.getMessage());
