@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
+import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Map;
@@ -17,16 +17,18 @@ public class ReaderWorker implements Runnable {
 
     private final Map<String, User> users;
     private final Map<Integer, Post> posts;
+    private final CallbackHandler callbackHandler;
     private final Map<String, Socket> loggedUsers;
     private final Set<Registable> readyToBeRegistered;
 
     private final Selector selector;
 
-    public ReaderWorker(SelectionKey key, Map<String, User> users, Map<Integer, Post> posts, Map<String, Socket> loggedUsers, Set<Registable> readyToBeRegistered, Selector selector) {
+    public ReaderWorker(SelectionKey key, Map<String, User> users, Map<Integer, Post> posts, Map<String, Socket> loggedUsers, CallbackHandler callbackHandler, Set<Registable> readyToBeRegistered, Selector selector) {
         this.key = key;
         this.users = users;
         this.posts = posts;
         this.loggedUsers = loggedUsers;
+        this.callbackHandler = callbackHandler;
         this.readyToBeRegistered = readyToBeRegistered;
         this.selector = selector;
 
@@ -52,9 +54,13 @@ public class ReaderWorker implements Runnable {
                 if (args[1].equals("users")) listUsers(args[2]);
             }
             case "post" -> createPost(request);
+            case "delete" -> deletePost(args[2], Integer.parseInt(args[1]));
+            case "follow" -> followUser(args[2], args[1]);
+            case "unfollow" -> unfollowUser(args[2], args[1]);
+            case "rate" -> ratePost(args[3], Integer.parseInt(args[1]), args[2]);
         }
 
-        readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer));
+        readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer)); //TODO Cosa succede poi nel main se c'è stata la client.close() ?
         selector.wakeup();
     }
 
@@ -97,7 +103,7 @@ public class ReaderWorker implements Runnable {
             }
             User user = users.get(username);
             if (user != null) {
-                if (user.comparePassword(Hash.bytesToHex(Hash.sha256(password)))) {
+                if (user.comparePassword(Hash.bytesToHex(Hash.sha256(username + password)))) {
                     loggedUsers.put(username, client.socket());
                     setResponse(0);
                 } else
@@ -124,7 +130,7 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
-        StringBuilder response = new StringBuilder(); //TODO Da qui
+        StringBuilder response = new StringBuilder(); //TODO Probabilmente andrebbero inviati uno alla volta
         User user = users.get(username);
         for (User u : users.values()) {
             if (user != u) {
@@ -136,6 +142,85 @@ public class ReaderWorker implements Runnable {
         }
 
         setResponse(0, response.toString());
+    }
+
+    private void followUser(String username, String userToFollow) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User userToFollowObj = users.get(userToFollow);
+        if (userToFollowObj == null) {
+            setResponse(2);
+            return;
+        }
+
+        try {
+            if (users.get(username).addFollowed(userToFollow) && userToFollowObj.addFollower(username)) {
+                setResponse(0);
+                callbackHandler.notifyNewFollower(userToFollow, username);
+            } else
+                setResponse(3);
+        } catch (RemoteException e) {
+            System.err.println("Error while notifying the new follower: " + e.getMessage());
+            try {client.close();} catch (Exception ignored) {} //TODO Deve inviare comunque la risposta al client?
+        }
+    }
+
+    private void unfollowUser(String username, String userToUnfollow) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User userToUnfollowObj = users.get(userToUnfollow);
+        if (userToUnfollowObj == null) {
+            setResponse(2);
+            return;
+        }
+
+        try {
+            if (users.get(username).removeFollowed(userToUnfollow) && userToUnfollowObj.removeFollower(username)) {
+                setResponse(0);
+                callbackHandler.notifyLostFollower(userToUnfollow, username);
+            } else
+                setResponse(3);
+        } catch (RemoteException e) {
+            System.err.println("Error while notifying the new follower: " + e.getMessage());
+            try {client.close();} catch (Exception ignored) {} //TODO Deve inviare comunque la risposta al client?
+        }
+    }
+
+    private void ratePost(String username, int idPost, String vote) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+        if (!vote.equals("+1") && !vote.equals("-1")) {
+            setResponse(2);
+            return;
+        }
+
+        Post post = posts.get(idPost);
+        if (post == null) {
+            setResponse(3);
+            return;
+        }
+
+        if (post.getAuthor().equals(username)) {
+            setResponse(4);
+            return;
+        }
+
+        if (post.containsUpvote(username) || post.containsDownvote(username)) {
+            setResponse(5);
+            return;
+        }
+
+        if (vote.equals("+1")) post.addUpvote(username);
+        if (vote.equals("-1")) post.addDownvote(username);
+        setResponse(0);
     }
 
     private void createPost(String request) {
@@ -159,11 +244,28 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
-        User user = users.get(username);
-        Post newPost = new Post(user.getId(), title, content);
+        Post newPost = new Post(username, title, content);
         posts.put(newPost.getIdPost(), newPost);
+        User user = users.get(username);
         user.addPost(newPost.getIdPost());
 
+        setResponse(0);
+    }
+
+    private void deletePost(String username, int idPost) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User user = users.get(username);
+        if (!user.ownsPost(idPost)) {
+            setResponse(2);
+            return;
+        }
+
+        posts.remove(idPost);
+        user.removePost(idPost);
         setResponse(0);
     }
 }

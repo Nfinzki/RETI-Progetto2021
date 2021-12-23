@@ -9,6 +9,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +21,7 @@ public class ClientMain {
     private static int registryPort = 11111; //TODO Mettere una porta di default più significativa
     private static String registryHost = "localhost";
     private static String registerServiceName = "RMI-REGISTER";
+    private static String callbackServiceName = "RMI-FOLLOWER-CALLBACK"; //TODO Aggiungere il parsing del file di config
     private static String serverIP = "localhost";
     private static int tcpPort = 2222;
     private static int bufferSize = 16 * 1024;
@@ -27,6 +29,10 @@ public class ClientMain {
     private static ByteBuffer buffer;
 
     private static String currentLoggedUser = null;
+
+    private static List<String> followers;
+    private static CallbackHandlerInterface serverCallbackHandler = null;
+    private static NotifyNewFollower callbackStub = null;
 
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
@@ -37,7 +43,20 @@ public class ClientMain {
 
         parseConfigFile();
         buffer = ByteBuffer.allocate(bufferSize);
-        RegisterInterface register = getRemoteRegisterObject();
+
+        //RegisterInterface register = getRemoteRegisterObject();
+        RegisterInterface register = null;
+        try {
+            Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
+            register = (RegisterInterface) registry.lookup(registerServiceName);
+            serverCallbackHandler = (CallbackHandlerInterface) registry.lookup(callbackServiceName);
+        } catch (RemoteException e) {
+            System.err.println("Error with the remote object: " + e.getMessage());
+            System.exit(1);
+        } catch (NotBoundException e) {
+            System.err.println("Error while retrieving the remote object: " + e.getMessage());
+            System.exit(1);
+        }
 
         Scanner cliScanner = new Scanner(System.in);
         String command;
@@ -67,7 +86,7 @@ public class ClientMain {
                 }
                 case "list" : {
                     if (arguments.length != 2 || (!arguments[1].equals("users") && !arguments[1].equals("following") && !arguments[1].equals("followers"))) {
-                        System.err.println("Invalid command '" + command + "'. Use 'list users' or 'list following'");
+                        System.err.println("Invalid command '" + command + "'. Use 'list users', 'list followers' or 'list following'");
                         break;
                     }
 
@@ -75,12 +94,18 @@ public class ClientMain {
                         listUsers(command);
                         break;
                     } else if (arguments[1].equals("followers")) { //list followers
-
+                        listFollowers();
                     } //list following
                     break;
                 }
-                case "follow" : break;
-                case "unfollow" : break;
+                case "follow" : {
+                    followUser(command);
+                    break;
+                }
+                case "unfollow" : {
+                    unfollowUser(command);
+                    break;
+                }
                 case "blog" : break;
                 case "post" : {
                     createPost(command);
@@ -99,9 +124,15 @@ public class ClientMain {
                     }
                     break;
                 }
-                case "delete" : break;
+                case "delete" : {
+                    deletePost(command);
+                    break;
+                }
                 case "rewin" : break;
-                case "rate" : break;
+                case "rate" : {
+                    ratePost(command);
+                    break;
+                }
                 case "comment" : break;
                 case "wallet" : {
                     if (arguments.length > 2 || (arguments.length == 2 && !arguments[1].equals("btc"))) {
@@ -122,6 +153,106 @@ public class ClientMain {
                 }
                 default: System.err.println("Unknown command: " + command);
             }
+        }
+    }
+
+    private static void ratePost(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged in");
+            return;
+        }
+
+        String request = command + " " + currentLoggedUser;
+        try {
+            sendRequest(request);
+
+            buffer.clear();
+            //Reads the response
+            socketChannel.read(buffer);
+            //Sets the buffer ready to be read
+            buffer.flip();
+            int responseId = buffer.getInt();
+
+            if (responseId == 0) System.out.println("< Post rated correctly");
+            if (responseId == 1) System.err.println("< There is no user logged in");
+            if (responseId == 2) System.err.println("< Unknown command. Usage: rate idPost rate (rate must be '+1' or '-1'");
+            if (responseId == 3) System.err.println("< Post doesn't exists");
+            if (responseId == 4) System.err.println("< You can't rate your own post");
+            if (responseId == 5) System.err.println("< You've already rated this post");
+
+        } catch (IOException e) {
+            System.err.println("Error during logout (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void followUser(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged in");
+            return;
+        }
+
+        String request = command + " " + currentLoggedUser;
+        try {
+            sendRequest(request);
+
+            buffer.clear();
+            //Reads the response
+            socketChannel.read(buffer);
+            //Sets the buffer ready to be read
+            buffer.flip();
+            int responseId = buffer.getInt();
+
+            String userToFollow = command.split(" ")[1];
+            if (responseId == 0) System.out.println("< " + userToFollow + " followed");
+            if (responseId == 1) System.err.println("< There is no user logged in");
+            if (responseId == 2) System.err.println("< User " + userToFollow + " doesn't exists");
+            if (responseId == 3) System.err.println("< User " + userToFollow + " already followed");
+
+        } catch (IOException e) {
+            System.err.println("Error during logout (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void unfollowUser(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged in");
+            return;
+        }
+
+        String request = command + " " + currentLoggedUser;
+        try {
+            sendRequest(request);
+
+            buffer.clear();
+            //Reads the response
+            socketChannel.read(buffer);
+            //Sets the buffer ready to be read
+            buffer.flip();
+            int responseId = buffer.getInt();
+
+            String userToUnfollow = command.split(" ")[1];
+            if (responseId == 0) System.out.println("< " + userToUnfollow + " unfollowed");
+            if (responseId == 1) System.err.println("< There is no user logged in");
+            if (responseId == 2) System.err.println("< User " + userToUnfollow + " doesn't exists");
+            if (responseId == 3) System.err.println("< User " + userToUnfollow + " already not followed");
+
+        } catch (IOException e) {
+            System.err.println("Error during logout (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void listFollowers() {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged in");
+            return;
+        }
+
+        System.out.println("< Followers:");
+        synchronized (followers) {
+            if (followers.isEmpty()) System.out.println("< There are no followers");
+
+            for (String user : followers)
+                System.out.println("< " + user);
         }
     }
 
@@ -163,9 +294,12 @@ public class ClientMain {
 
             if (responseId == 0) {
                 System.out.println("< " + currentLoggedUser + " logged out");
-                currentLoggedUser = null;
                 socketChannel.close();
                 socketChannel = null;
+
+                followers = null;
+                serverCallbackHandler.unregisterForCallback(currentLoggedUser, callbackStub);
+                currentLoggedUser = null;
             } else {
                 System.err.println("< " + currentLoggedUser + " is not logged in");
             }
@@ -204,9 +338,18 @@ public class ClientMain {
             if (responseId == 0) {
                 System.out.println("< " + command.split(" ")[1] + " logged in");
                 currentLoggedUser = command.split(" ")[1];
+
+                followers = new ArrayList<>();
+                NotifyNewFollower followerCallback = new NotifyNewFollowerService(followers);
+                callbackStub = (NotifyNewFollower) UnicastRemoteObject.exportObject(followerCallback, 0);
+                serverCallbackHandler.registerForCallback(currentLoggedUser, callbackStub);
             }
             if (responseId == 1) System.err.println("< Username or password not correct");
             if (responseId == 2) System.err.println("< Already logged on another terminal");
+            if (responseId == 1 || responseId == 2) {
+                socketChannel.close();
+                socketChannel = null;
+            }
 
             //Returns the socketChannel
             return socketChannel;
@@ -280,6 +423,29 @@ public class ClientMain {
         }
     }
 
+    private static void deletePost(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) System.out.println("< Post deleted correctly");
+            if (responseId == 1) System.err.println("< There is no user logged");
+            if (responseId == 2) System.err.println("< You don't own this post");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
     //Registers a new user to WINSOME
     private static void registerUser(RegisterInterface register, String[] arguments) {
         if (arguments.length > 8) {
@@ -296,6 +462,7 @@ public class ClientMain {
                 if (result == 1) System.err.println("< Password field is empty");
                 if (result == 2 || result == 3) System.err.println("< Registration requires minimum 1 tag and maximum 5");
                 if (result == 4) System.err.println("< User '" + arguments[1] + "' already registered");
+                return;
             }
             System.out.println("< " + arguments[1] + " registered correctly");
         } catch (RemoteException e) {
@@ -304,7 +471,7 @@ public class ClientMain {
     }
 
     //Retrieving the remote object for the registration process
-    private static RegisterInterface getRemoteRegisterObject() {
+    /*private static RegisterInterface getRemoteRegisterObject() {
         try {
             Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
             return (RegisterInterface) registry.lookup(registerServiceName);
@@ -317,7 +484,7 @@ public class ClientMain {
         }
 
         return null;
-    }
+    }*/
 
     //Parsing del file di configurazione del client
     private static void parseConfigFile() {
