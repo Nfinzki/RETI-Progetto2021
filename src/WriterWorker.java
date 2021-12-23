@@ -32,7 +32,7 @@ public class WriterWorker implements Runnable {
     private void sendResponse() {
         try {
             byteBuffer.flip();
-            client.write(byteBuffer);
+            while(byteBuffer.hasRemaining()) client.write(byteBuffer);
         } catch (IOException e) {
             System.err.println("Error sending response to the client: " + e.getMessage());
             try {key.channel().close();} catch (Exception ignored) {} //TODO Deve inviare comunque la risposta al client?
