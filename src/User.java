@@ -44,6 +44,37 @@ public class User {
         return this.password.equals(password);
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String[] getTag () {
+        return tag;
+    }
+
+    public List<Integer> getPosts() {
+        return blog;
+    }
+
+    public String[] getCommonTags(User u) {
+        List<String> commonTags = new ArrayList<>(5);
+
+        for (String t : tag) {
+            for (String t2 : u.getTag())
+                if (t.equals(t2)) commonTags.add(t);
+        }
+
+        return commonTags.toArray(new String[0]);
+    }
+
+    public void addPost(int postId) {
+        blog.add(postId);
+    }
+
     public String toString() {
         return id + " " + username + " " + password + " " + Arrays.toString(tag) + " " + follower + " " + followed + " " + blog + " " + wallet;
     }
