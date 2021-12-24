@@ -79,10 +79,11 @@ public class ReaderWorker implements Runnable {
     private String readRequest() {
         try {
             byteBuffer.clear(); //Predispone la scrittura sul buffer
-            client.read(byteBuffer); //Scrive dati sul buffer
+            int byteRead = client.read(byteBuffer); //Scrive dati sul buffer
             byteBuffer.flip();
 
-            if (byteBuffer.limit() == 0) return null; //TODO Rivedere questa cosa
+            //Checks if the client sent the termination signal
+            if (byteRead == -1) throw new IOException("CLient disconnected");
 
             int requestLen = byteBuffer.getInt();
             byte[] requestBytes = new byte[requestLen];
