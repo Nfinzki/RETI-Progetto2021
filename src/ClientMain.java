@@ -108,7 +108,10 @@ public class ClientMain {
                     unfollowUser(command);
                     break;
                 }
-                case "blog" : break;
+                case "blog" : {
+                    viewBlog(command);
+                    break;
+                }
                 case "post" : {
                     createPost(command);
                     break;
@@ -513,6 +516,34 @@ public class ClientMain {
                 System.out.println("< Following:");
                 for (String user : listFollowing)
                     System.out.println("< " + user);
+            }
+            if (responseId == 1) System.err.println("< There is no user logged");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void viewBlog(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) {
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String blogPosts = new String(strByte);
+                //TODO Continuare
             }
             if (responseId == 1) System.err.println("< There is no user logged");
         } catch (IOException e) {
