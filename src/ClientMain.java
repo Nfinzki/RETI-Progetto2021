@@ -95,7 +95,9 @@ public class ClientMain {
                         break;
                     } else if (arguments[1].equals("followers")) { //list followers
                         listFollowers();
-                    } //list following
+                    } else { //list following
+                        listFollowing(command);
+                    }
                     break;
                 }
                 case "follow" : {
@@ -374,22 +376,26 @@ public class ClientMain {
             buffer.get(strByte);
             String userFollowers = new String(strByte);
 
-            String []users = userFollowers.split(",");
-            for (int i = 0; i < users.length; i++) {
-                int userLen = users[i].length();
-                if (users.length == 1) {
-                    followers.add(users[i].substring(2, userLen-2));
-                    break;
-                }
-
-                if (i == 0) followers.add(users[i].substring(2, userLen-1));
-                if (i == users.length-1) followers.add(users[i].substring(1, userLen - 2));
-                if (i != 0 && i != users.length-1) followers.add(users[i].substring(1, userLen-1));
-
-            }
+            getUserFromJson(followers, userFollowers);
 
         } catch (IOException e) {
             System.err.println("Error while recovering followers (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void getUserFromJson(List<String> list, String jsonString) {
+        String []users = jsonString.split(",");
+        for (int i = 0; i < users.length; i++) {
+            int userLen = users[i].length();
+            if (users.length == 1) {
+                list.add(users[i].substring(2, userLen-2));
+                break;
+            }
+
+            if (i == 0) list.add(users[i].substring(2, userLen-1));
+            if (i == users.length-1) list.add(users[i].substring(1, userLen - 2));
+            if (i != 0 && i != users.length-1) list.add(users[i].substring(1, userLen-1));
+
         }
     }
 
@@ -475,6 +481,40 @@ public class ClientMain {
             if (responseId == 0) System.out.println("< Post deleted correctly");
             if (responseId == 1) System.err.println("< There is no user logged");
             if (responseId == 2) System.err.println("< You don't own this post");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void listFollowing(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) {
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String userFollowing = new String(strByte);
+                List<String> listFollowing = new ArrayList<>();
+
+                getUserFromJson(listFollowing, userFollowing);
+
+                System.out.println("< Following:");
+                for (String user : listFollowing)
+                    System.out.println("< " + user);
+            }
+            if (responseId == 1) System.err.println("< There is no user logged");
         } catch (IOException e) {
             System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
         }

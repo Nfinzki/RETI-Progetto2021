@@ -52,6 +52,7 @@ public class ReaderWorker implements Runnable {
                 }
 
                 if (args[1].equals("users")) listUsers(args[2]);
+                if (args[1].equals("following")) listFollowing(args[2]);
             }
             case "post" -> createPost(request);
             case "delete" -> deletePost(args[2], Integer.parseInt(args[1]));
@@ -269,6 +270,16 @@ public class ReaderWorker implements Runnable {
         posts.remove(idPost);
         user.removePost(idPost);
         setResponse(0);
+    }
+
+    private void listFollowing(String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User user = users.get(username);
+        setResponse(0, user.getFollowingAsJson());
     }
 
     private void sendFollowers(String username) {
