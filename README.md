@@ -7,7 +7,7 @@ Funzionalità da sviluppare:
 - [x] logout
 - [x] listUsers
 - [x] listFollowers
-- [ ] listFollowing
+- [x] listFollowing
 - [x] followUser
 - [x] unfollowUser
 - [ ] viewBlog
