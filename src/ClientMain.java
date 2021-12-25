@@ -343,6 +343,7 @@ public class ClientMain {
                 NotifyNewFollower followerCallback = new NotifyNewFollowerService(followers);
                 callbackStub = (NotifyNewFollower) UnicastRemoteObject.exportObject(followerCallback, 0);
                 serverCallbackHandler.registerForCallback(currentLoggedUser, callbackStub);
+                getFollowers(command.split(" ")[1]);
             }
             if (responseId == 1) System.err.println("< Username or password not correct");
             if (responseId == 2) System.err.println("< Already logged on another terminal");
@@ -356,6 +357,39 @@ public class ClientMain {
         } catch (IOException e) {
             System.err.println("Error during login, please try again (" + e.getMessage() + ")");
             return null;
+        }
+    }
+
+    private static void getFollowers(String username) {
+        try {
+            sendRequest("getFollowers " + username);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            buffer.getInt();
+            int strLen = buffer.getInt();
+            byte []strByte = new byte[strLen];
+            buffer.get(strByte);
+            String userFollowers = new String(strByte);
+
+            String []users = userFollowers.split(",");
+            for (int i = 0; i < users.length; i++) {
+                int userLen = users[i].length();
+                if (users.length == 1) {
+                    followers.add(users[i].substring(2, userLen-2));
+                    break;
+                }
+
+                if (i == 0) followers.add(users[i].substring(2, userLen-1));
+                if (i == users.length-1) followers.add(users[i].substring(1, userLen - 2));
+                if (i != 0 && i != users.length-1) followers.add(users[i].substring(1, userLen-1));
+
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error while recovering followers (" + e.getMessage() + ")");
         }
     }
 

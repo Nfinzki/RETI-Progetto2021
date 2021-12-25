@@ -58,6 +58,7 @@ public class ReaderWorker implements Runnable {
             case "follow" -> followUser(args[2], args[1]);
             case "unfollow" -> unfollowUser(args[2], args[1]);
             case "rate" -> ratePost(args[3], Integer.parseInt(args[1]), args[2]);
+            case "getFollowers" -> sendFollowers(args[1]);
         }
 
         readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer)); //TODO Cosa succede poi nel main se c'è stata la client.close() ?
@@ -268,5 +269,11 @@ public class ReaderWorker implements Runnable {
         posts.remove(idPost);
         user.removePost(idPost);
         setResponse(0);
+    }
+
+    private void sendFollowers(String username) {
+        User user = users.get(username);
+
+        setResponse(0, user.getFollowersAsJson());
     }
 }
