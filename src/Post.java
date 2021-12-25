@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -58,6 +60,11 @@ public class Post {
 
     public boolean containsDownvote(String user) {
         return downvotes.contains(user);
+    }
+
+    public String toJson() { //TODO Deve inviare solo idPost, Autore e Titolo
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 
     public String toString() {

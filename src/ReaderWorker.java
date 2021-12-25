@@ -52,12 +52,14 @@ public class ReaderWorker implements Runnable {
                 }
 
                 if (args[1].equals("users")) listUsers(args[2]);
+                if (args[1].equals("following")) listFollowing(args[2]);
             }
             case "post" -> createPost(request);
             case "delete" -> deletePost(args[2], Integer.parseInt(args[1]));
             case "follow" -> followUser(args[2], args[1]);
             case "unfollow" -> unfollowUser(args[2], args[1]);
             case "rate" -> ratePost(args[3], Integer.parseInt(args[1]), args[2]);
+            case "getFollowers" -> sendFollowers(args[1]);
         }
 
         readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer)); //TODO Cosa succede poi nel main se c'è stata la client.close() ?
@@ -268,5 +270,38 @@ public class ReaderWorker implements Runnable {
         posts.remove(idPost);
         user.removePost(idPost);
         setResponse(0);
+    }
+
+    private void listFollowing(String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User user = users.get(username);
+        setResponse(0, user.getFollowingAsJson());
+    }
+
+    private void viewBlog(String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User user = users.get(username);
+        String response = "[";
+        for (int postId : user.getBlog()) {
+            Post post = posts.get(postId);
+            response += post.toJson();
+        }
+        response += "]";
+
+        setResponse(0, response);
+    }
+
+    private void sendFollowers(String username) {
+        User user = users.get(username);
+
+        setResponse(0, user.getFollowersAsJson());
     }
 }

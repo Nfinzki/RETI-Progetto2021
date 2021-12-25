@@ -95,7 +95,9 @@ public class ClientMain {
                         break;
                     } else if (arguments[1].equals("followers")) { //list followers
                         listFollowers();
-                    } //list following
+                    } else { //list following
+                        listFollowing(command);
+                    }
                     break;
                 }
                 case "follow" : {
@@ -106,7 +108,10 @@ public class ClientMain {
                     unfollowUser(command);
                     break;
                 }
-                case "blog" : break;
+                case "blog" : {
+                    viewBlog(command);
+                    break;
+                }
                 case "post" : {
                     createPost(command);
                     break;
@@ -343,6 +348,7 @@ public class ClientMain {
                 NotifyNewFollower followerCallback = new NotifyNewFollowerService(followers);
                 callbackStub = (NotifyNewFollower) UnicastRemoteObject.exportObject(followerCallback, 0);
                 serverCallbackHandler.registerForCallback(currentLoggedUser, callbackStub);
+                getFollowers(command.split(" ")[1]);
             }
             if (responseId == 1) System.err.println("< Username or password not correct");
             if (responseId == 2) System.err.println("< Already logged on another terminal");
@@ -356,6 +362,43 @@ public class ClientMain {
         } catch (IOException e) {
             System.err.println("Error during login, please try again (" + e.getMessage() + ")");
             return null;
+        }
+    }
+
+    private static void getFollowers(String username) {
+        try {
+            sendRequest("getFollowers " + username);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            buffer.getInt();
+            int strLen = buffer.getInt();
+            byte []strByte = new byte[strLen];
+            buffer.get(strByte);
+            String userFollowers = new String(strByte);
+
+            getUserFromJson(followers, userFollowers);
+
+        } catch (IOException e) {
+            System.err.println("Error while recovering followers (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void getUserFromJson(List<String> list, String jsonString) {
+        String []users = jsonString.split(",");
+        for (int i = 0; i < users.length; i++) {
+            int userLen = users[i].length();
+            if (users.length == 1) {
+                list.add(users[i].substring(2, userLen-2));
+                break;
+            }
+
+            if (i == 0) list.add(users[i].substring(2, userLen-1));
+            if (i == users.length-1) list.add(users[i].substring(1, userLen - 2));
+            if (i != 0 && i != users.length-1) list.add(users[i].substring(1, userLen-1));
+
         }
     }
 
@@ -441,6 +484,68 @@ public class ClientMain {
             if (responseId == 0) System.out.println("< Post deleted correctly");
             if (responseId == 1) System.err.println("< There is no user logged");
             if (responseId == 2) System.err.println("< You don't own this post");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void listFollowing(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) {
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String userFollowing = new String(strByte);
+                List<String> listFollowing = new ArrayList<>();
+
+                getUserFromJson(listFollowing, userFollowing);
+
+                System.out.println("< Following:");
+                for (String user : listFollowing)
+                    System.out.println("< " + user);
+            }
+            if (responseId == 1) System.err.println("< There is no user logged");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void viewBlog(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) {
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String blogPosts = new String(strByte);
+                //TODO Continuare
+            }
+            if (responseId == 1) System.err.println("< There is no user logged");
         } catch (IOException e) {
             System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
         }
