@@ -71,7 +71,10 @@
   "follower": [
     "utente"
   ],
-  "followed": [],
+  "followed": [
+    "luca",
+    "mario"
+  ],
   "blog": [
     0,
     1
