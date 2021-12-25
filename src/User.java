@@ -95,6 +95,11 @@ public class User {
         return gson.toJson(follower);
     }
 
+    public String getFollowingAsJson() {
+        Gson gson = new Gson();
+        return gson.toJson(followed);
+    }
+
     public String toString() {
         return username + " " + password + " " + Arrays.toString(tag) + " " + follower + " " + followed + " " + blog + " " + wallet;
     }
