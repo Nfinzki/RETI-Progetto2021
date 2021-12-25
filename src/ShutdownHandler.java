@@ -63,10 +63,10 @@ public class ShutdownHandler {
                 if (!firstEntry) buffer.put(",\n".getBytes());
 
                 //Serializes user
-                String serializedUser = gson.toJson(value);
+                String serializedObj = gson.toJson(value);
 
                 //Writes serialized user to the buffer
-                buffer.put(serializedUser.getBytes());
+                buffer.put(serializedObj.getBytes());
 
                 //Sets the buffer in read mode to write to the file
                 buffer.flip();
