@@ -282,6 +282,23 @@ public class ReaderWorker implements Runnable {
         setResponse(0, user.getFollowingAsJson());
     }
 
+    private void viewBlog(String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User user = users.get(username);
+        String response = "[";
+        for (int postId : user.getBlog()) {
+            Post post = posts.get(postId);
+            response += post.toJson();
+        }
+        response += "]";
+
+        setResponse(0, response);
+    }
+
     private void sendFollowers(String username) {
         User user = users.get(username);
 
