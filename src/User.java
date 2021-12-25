@@ -100,6 +100,10 @@ public class User {
         return gson.toJson(followed);
     }
 
+    public Set<Integer> getBlog() {
+        return blog;
+    }
+
     public String toString() {
         return username + " " + password + " " + Arrays.toString(tag) + " " + follower + " " + followed + " " + blog + " " + wallet;
     }
