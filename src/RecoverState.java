@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 
 import java.io.*;
@@ -33,7 +34,7 @@ public class RecoverState {
                 String postContent = getStringFromJson(jsonReader);
 
                 //Reads comment
-                List<String> comments = getStringListFromJson(jsonReader);
+                Set<Comment> comments = getCommentSetFromJson(jsonReader);
 
                 //Reads upvote
                 Set<String> upvotes = getStringSetFromJson(jsonReader);
@@ -104,7 +105,10 @@ public class RecoverState {
                 Set<Integer> blog = getIntegerSetFromJson(jsonReader);
 
                 //Read wallet
-                double wincoin = getWincoinFromJson(jsonReader);
+                Gson gson = new Gson();
+                jsonReader.nextName();
+                Wallet wallet = gson.fromJson(jsonReader, Wallet.class);
+                //double wincoin = getWincoinFromJson(jsonReader);
 
                 //End user
                 jsonReader.endObject();
@@ -120,7 +124,8 @@ public class RecoverState {
                                 follower,
                                 followed,
                                 blog,
-                                new Wallet(wincoin)
+                                //new Wallet(wincoin)
+                                wallet
                         )
                 );
             }
@@ -152,6 +157,23 @@ public class RecoverState {
             follower.add(jsonReader.nextString());
         jsonReader.endArray(); //Removes the ']'
         return follower;
+    }
+
+    private static Set<Comment> getCommentSetFromJson(JsonReader jsonReader) throws IOException{
+        jsonReader.nextName();
+        //Removes '['
+        jsonReader.beginArray();
+        Set<Comment> comments = ConcurrentHashMap.newKeySet();
+        Gson gson = new Gson();
+        int nextId = 0;
+        while (jsonReader.hasNext()) {//Reads all the elements in the array
+            Comment comment = gson.fromJson(jsonReader, Comment.class);
+            comments.add(comment);
+
+            if (comment.getId() > nextId) comment.setNextId(comment.getId() + 1);
+        }
+        jsonReader.endArray(); //Removes the ']'
+        return comments;
     }
 
     private static Set<Integer> getIntegerSetFromJson(JsonReader jsonReader) throws IOException {
