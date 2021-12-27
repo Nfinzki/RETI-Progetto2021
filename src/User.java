@@ -108,6 +108,15 @@ public class User {
         return blog;
     }
 
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public String getWalletAsJson() {
+        Gson gson = new Gson();
+        return gson.toJson(wallet);
+    }
+
     public String toString() {
         return username + " " + password + " " + Arrays.toString(tag) + " " + follower + " " + followed + " " + blog + " " + wallet;
     }
