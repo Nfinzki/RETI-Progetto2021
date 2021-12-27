@@ -1,3 +1,8 @@
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -117,15 +122,15 @@ public class ClientMain {
                     break;
                 }
                 case "show" : {
-                    if (arguments.length != 2 || (!arguments[1].equals("feed") && !arguments[1].equals("post"))) {
+                    if (arguments.length < 2 || (!arguments[1].equals("feed") && !arguments[1].equals("post"))) {
                         System.err.println("Invalid command '" + command + "'. Use 'show feed' or 'show post'");
                         break;
                     }
 
                     if (arguments[1].equals("feed")) { //show feed
-
+                        showFeed(command);
                     } else { //show post
-
+                        showPost(command);
                     }
                     break;
                 }
@@ -133,12 +138,18 @@ public class ClientMain {
                     deletePost(command);
                     break;
                 }
-                case "rewin" : break;
+                case "rewin" : {
+                    rewinPost(command);
+                    break;
+                }
                 case "rate" : {
                     ratePost(command);
                     break;
                 }
-                case "comment" : break;
+                case "comment" : {
+                    addComment(command);
+                    break;
+                }
                 case "wallet" : {
                     if (arguments.length > 2 || (arguments.length == 2 && !arguments[1].equals("btc"))) {
                         System.err.println("Invallid command '" + command + "'. Use 'wallet' or 'wallet btc'");
@@ -379,6 +390,7 @@ public class ClientMain {
             buffer.get(strByte);
             String userFollowers = new String(strByte);
 
+            if (userFollowers.equals("[]")) return;
             getUserFromJson(followers, userFollowers);
 
         } catch (IOException e) {
@@ -543,9 +555,156 @@ public class ClientMain {
                 byte []strByte = new byte[strLen];
                 buffer.get(strByte);
                 String blogPosts = new String(strByte);
-                //TODO Continuare
+
+                JsonArray jsonArray = JsonParser.parseString(blogPosts).getAsJsonArray();
+                for (JsonElement jsonElement : jsonArray) {
+                    JsonObject jsonEntry = JsonParser.parseString(jsonElement.toString()).getAsJsonObject();
+                    int idPost = jsonEntry.get("idPost").getAsInt();
+                    String author = jsonEntry.get("author").getAsString();
+                    String postTitle = jsonEntry.get("postTitle").getAsString();
+
+                    System.out.println("< " + idPost + " " + author + " \"" + postTitle + "\"");
+                }
             }
             if (responseId == 1) System.err.println("< There is no user logged");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void showPost(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == -1) System.err.println("< Invalid command");
+            if (responseId == 0) {
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String post = new String(strByte);
+
+                JsonObject jsonObject = JsonParser.parseString(post).getAsJsonObject();
+                String postTitle = jsonObject.get("postTitle").getAsString();
+                String postContent = jsonObject.get("postContent").getAsString();
+                int upvotes = jsonObject.get("upvotes").getAsInt();
+                int downvotes = jsonObject.get("downvotes").getAsInt();
+                JsonArray comments = jsonObject.get("comments").getAsJsonArray();
+
+                System.out.println("< Title: " + postTitle);
+                System.out.println("< Content: " + postContent);
+                System.out.println("< Votes: " + upvotes + " upovotes, " + downvotes + " downvotes");
+                System.out.print("< Comments: ");
+                if (comments.size() == 0)
+                    System.out.println(comments.size());
+                else {
+                    System.out.println();
+                    for (JsonElement comment : comments) {
+                        JsonObject jsonEntry = JsonParser.parseString(comment.toString()).getAsJsonObject();
+                        String author = jsonEntry.get("author").getAsString();
+                        String commentContent = jsonEntry.get("content").getAsString();
+                        System.out.println("<\t" + author + ": \"" + commentContent + "\"");
+                    }
+                }
+            }
+            if (responseId == 1) System.err.println("< There is no user logged");
+            if (responseId == 2) System.err.println("< This post doesn't exists");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void showFeed(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) {
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String blogPosts = new String(strByte);
+
+                JsonArray jsonArray = JsonParser.parseString(blogPosts).getAsJsonArray();
+                for (JsonElement jsonElement : jsonArray) {
+                    JsonObject jsonEntry = JsonParser.parseString(jsonElement.toString()).getAsJsonObject();
+                    int idPost = jsonEntry.get("idPost").getAsInt();
+                    String author = jsonEntry.get("author").getAsString();
+                    String postTitle = jsonEntry.get("postTitle").getAsString();
+
+                    System.out.println("< " + idPost + " " + author + " \"" + postTitle + "\"");
+                }
+            }
+            if (responseId == 1) System.err.println("< There is no user logged");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void rewinPost(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) System.out.println("< Post rewinned correctly");
+            if (responseId == 1) System.err.println("< There is no user logged");
+            if (responseId == 2) System.err.println("< This post doesn't exists");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void addComment(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == 0) System.out.println("< Comment added correctly");
+            if (responseId == 1) System.err.println("< There is no user logged");
+            if (responseId == 2) System.err.println("< Comment can't be empty");
+            if (responseId == 3) System.err.println("< This post doesn't exists");
+            if (responseId == 4) System.err.println("< This post isn't in your feed");
+            if (responseId == 5) System.err.println("< You can't comment your own post");
         } catch (IOException e) {
             System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
         }

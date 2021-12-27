@@ -51,14 +51,42 @@ public class ReaderWorker implements Runnable {
                     break;
                 }
 
-                if (args[1].equals("users")) listUsers(args[2]);
-                if (args[1].equals("following")) listFollowing(args[2]);
+                if (args[1].equals("users")) {
+                    listUsers(args[2]);
+                    break;
+                }
+                if (args[1].equals("following")) {
+                    listFollowing(args[2]);
+                    break;
+                }
+
+                setResponse(-1);
             }
             case "post" -> createPost(request);
             case "delete" -> deletePost(args[2], Integer.parseInt(args[1]));
             case "follow" -> followUser(args[2], args[1]);
             case "unfollow" -> unfollowUser(args[2], args[1]);
             case "rate" -> ratePost(args[3], Integer.parseInt(args[1]), args[2]);
+            case "blog" -> viewBlog(args[1]);
+            case "show" -> {
+                if (args[1].equals("post") && args.length == 4) {
+                    showPost(Integer.parseInt(args[2]), args[3]);
+                    break;
+                }
+
+                if (args[1].equals("feed") && args.length == 3) {
+                    showFeed(args[2]);
+                    break;
+                }
+
+                setResponse(-1);
+            }
+            case "rewin" -> rewinPost(Integer.parseInt(args[1]), args[2]);
+            case "comment" -> {
+                String comment = request.substring(request.indexOf("\"") + 1, request.lastIndexOf("\""));
+                String username = request.substring(request.lastIndexOf("\"") + 2);
+                addComment(Integer.parseInt(args[1]), comment, username);
+            }
             case "getFollowers" -> sendFollowers(args[1]);
         }
 
@@ -255,7 +283,7 @@ public class ReaderWorker implements Runnable {
         setResponse(0);
     }
 
-    private void deletePost(String username, int idPost) {
+    private void deletePost(String username, int idPost) { //TODO Cancellare il post anche da chi lo rewinna
         if (!loggedUsers.containsKey(username)) {
             setResponse(1);
             return;
@@ -289,14 +317,106 @@ public class ReaderWorker implements Runnable {
         }
 
         User user = users.get(username);
+        boolean firstEntry = true;
         String response = "[";
         for (int postId : user.getBlog()) {
+            if (!firstEntry) response += ", ";
             Post post = posts.get(postId);
-            response += post.toJson();
+
+            if (post.getAuthor().equals(username))
+                response += post.basicInfoToJson();
+
+            firstEntry = false;
         }
         response += "]";
 
         setResponse(0, response);
+    }
+
+    private void showPost(int idPost, String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        Post post = posts.get(idPost);
+        if (post == null) {
+            setResponse(2);
+            return;
+        }
+
+        setResponse(0, post.toJson());
+    }
+
+    private void showFeed(String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User user = users.get(username);
+        boolean firstEntry = true;
+        String response = "[";
+        for (String usernameFollowed : user.getFollowed()) {
+            User userFollowed = users.get(usernameFollowed);
+            for (int postId : userFollowed.getBlog()) {
+                if (!firstEntry) response += ", ";
+                Post post = posts.get(postId);
+                response += post.basicInfoToJson();
+                firstEntry = false;
+            }
+        }
+        response += "]";
+
+        setResponse(0, response);
+    }
+
+    private void rewinPost(int idPost, String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        Post post = posts.get(idPost);
+        if (post == null) {
+            setResponse(2);
+            return;
+        }
+
+        User user = users.get(username);
+        user.addPost(post.getIdPost());
+        setResponse(0);
+    }
+
+    private void addComment(int idPost, String comment, String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        if (comment.equals("")) {
+            setResponse(2);
+            return;
+        }
+
+        Post post = posts.get(idPost);
+        if (post == null) {
+            setResponse(3);
+            return;
+        }
+
+        if (!users.get(username).follows(post.getAuthor())) {
+            setResponse(4);
+            return;
+        }
+
+        if (post.getAuthor().equals(username)) {
+            setResponse(5);
+            return;
+        }
+
+        post.addComment(new Comment(username, comment));
+        setResponse(0);
     }
 
     private void sendFollowers(String username) {
