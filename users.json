@@ -17,7 +17,8 @@
     1
   ],
   "wallet": {
-    "wincoin": 0.0
+    "wincoin": 0.0,
+    "transactions": []
   }
 },
 {
@@ -32,7 +33,8 @@
   "followed": [],
   "blog": [],
   "wallet": {
-    "wincoin": 0.0
+    "wincoin": 0.0,
+    "transactions": []
   }
 },
 {
@@ -45,7 +47,8 @@
   "followed": [],
   "blog": [],
   "wallet": {
-    "wincoin": 0.0
+    "wincoin": 0.0,
+    "transactions": []
   }
 },
 {
@@ -60,7 +63,8 @@
   "followed": [],
   "blog": [],
   "wallet": {
-    "wincoin": 0.0
+    "wincoin": 0.0,
+    "transactions": []
   }
 },
 {
@@ -85,7 +89,8 @@
     1
   ],
   "wallet": {
-    "wincoin": 0.0
+    "wincoin": 5.0,
+    "transactions": []
   }
 }
 ]

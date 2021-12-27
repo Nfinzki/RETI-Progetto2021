@@ -18,5 +18,6 @@ Funzionalità da sviluppare:
 - [x] rewinPost
 - [x] ratePost
 - [x] addComment
-- [ ] getWallet
-- [ ] getWalletBitcoin
+- [x] getWallet
+- [x] getWalletBitcoin
+- [ ] calculate wincoin
