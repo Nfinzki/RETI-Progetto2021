@@ -7,11 +7,15 @@
     "investimenti",
     "economia"
   ],
-  "follower": [],
+  "follower": [
+    "nfinzki"
+  ],
   "followed": [
     "nfinzki"
   ],
-  "blog": [],
+  "blog": [
+    1
+  ],
   "wallet": {
     "wincoin": 0.0
   }
@@ -72,6 +76,7 @@
     "utente"
   ],
   "followed": [
+    "utente",
     "luca",
     "mario"
   ],

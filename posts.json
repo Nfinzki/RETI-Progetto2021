@@ -4,7 +4,13 @@
   "author": "nfinzki",
   "postTitle": "Primo post",
   "postContent": "Questo sarebbe il mio primo post",
-  "comments": [],
+  "comments": [
+    {
+      "idComment": 0,
+      "author": "utente",
+      "content": "Questo post non serve a niente, vergognati!"
+    }
+  ],
   "upvotes": [
     "utente"
   ],
@@ -15,7 +21,13 @@
   "author": "nfinzki",
   "postTitle": "Il mio secondo post",
   "postContent": "Ci sto iniziando a prendere gusto",
-  "comments": [],
+  "comments": [
+    {
+      "idComment": 0,
+      "author": "utente",
+      "content": "Sei senza speranza"
+    }
+  ],
   "upvotes": [],
   "downvotes": [
     "utente"
