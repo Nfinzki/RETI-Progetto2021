@@ -87,6 +87,19 @@ public class ReaderWorker implements Runnable {
                 String username = request.substring(request.lastIndexOf("\"") + 2);
                 addComment(Integer.parseInt(args[1]), comment, username);
             }
+            case "wallet" -> {
+                if (args.length == 2) {
+                    getWallet(args[1]);
+                    break;
+                }
+
+                if (args.length == 3) {
+                    getWalletBTC(args[2]);
+                    break;
+                }
+
+                setResponse(-1);
+            }
             case "getFollowers" -> sendFollowers(args[1]);
         }
 
@@ -417,6 +430,36 @@ public class ReaderWorker implements Runnable {
 
         post.addComment(new Comment(username, comment));
         setResponse(0);
+    }
+
+    private void getWallet(String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User user = users.get(username);
+        setResponse(0, user.getWalletAsJson());
+    }
+
+    private void getWalletBTC(String username) {
+        if (!loggedUsers.containsKey(username)) {
+            setResponse(1);
+            return;
+        }
+
+        User user = users.get(username);
+        String response = "{\"wincoinBTC\":" + user.getWallet().wincoinToBTC() + ", \"transactions\": [";
+        boolean firstEntry = true;
+        for (Transaction t : user.getWallet().getTransactions()) {
+            if (!firstEntry) response += ",";
+            response += t.toJson();
+
+            firstEntry = false;
+        }
+        response += "]}";
+
+        setResponse(0, response);
     }
 
     private void sendFollowers(String username) {

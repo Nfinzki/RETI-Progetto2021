@@ -157,9 +157,9 @@ public class ClientMain {
                     }
 
                     if (arguments.length == 2) { //wallet btc
-
+                        getWalletInBitcoin(command);
                     } else { //wallet
-
+                        getWallet(command);
                     }
                     break;
                 }
@@ -705,6 +705,100 @@ public class ClientMain {
             if (responseId == 3) System.err.println("< This post doesn't exists");
             if (responseId == 4) System.err.println("< This post isn't in your feed");
             if (responseId == 5) System.err.println("< You can't comment your own post");
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void getWallet(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == -1) System.err.println("< Invalid command. Use 'wallet' or 'wallet btc'");
+            if (responseId == 0) {
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String wallet = new String(strByte);
+
+                JsonObject jsonObject = JsonParser.parseString(wallet).getAsJsonObject();
+                double wincoin = jsonObject.get("wincoin").getAsDouble();
+                JsonArray transactions = jsonObject.get("transactions").getAsJsonArray();
+
+                System.out.println("< Wincoin: " + wincoin);
+                System.out.print("< Transactions: ");
+                if (transactions.size() == 0)
+                    System.out.println(transactions.size());
+                else {
+                    System.out.println();
+                    for (JsonElement transaction : transactions) {
+                        JsonObject jsonEntry = JsonParser.parseString(transaction.toString()).getAsJsonObject();
+                        String action = jsonEntry.get("action").getAsString();
+                        String timestamp = jsonEntry.get("timestamp").getAsString();
+                        System.out.println("<\t" + action + " " + timestamp);
+                    }
+                }
+            }
+            if (responseId == 1) System.err.println("< There is no user logged");
+
+        } catch (IOException e) {
+            System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
+        }
+    }
+
+    private static void getWalletInBitcoin(String command) {
+        if (socketChannel == null || currentLoggedUser == null) {
+            System.err.println("< There is no user logged");
+            return;
+        }
+
+        try {
+            String request = command + " " + currentLoggedUser;
+            sendRequest(request);
+
+            buffer.clear();
+            socketChannel.read(buffer);
+            buffer.flip();
+
+            int responseId = buffer.getInt();
+            if (responseId == -1) System.err.println("< Invalid command. Use 'wallet' or 'wallet btc'");
+            if (responseId == 0) {
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String wallet = new String(strByte);
+
+                JsonObject jsonObject = JsonParser.parseString(wallet).getAsJsonObject();
+                double btc = jsonObject.get("wincoinBTC").getAsDouble();
+                JsonArray transactions = jsonObject.get("transactions").getAsJsonArray();
+
+                System.out.println("< BTC: " + btc);
+                System.out.print("< Transactions: ");
+                if (transactions.size() == 0)
+                    System.out.println(transactions.size());
+                else {
+                    System.out.println();
+                    for (JsonElement transaction : transactions) {
+                        JsonObject jsonEntry = JsonParser.parseString(transaction.toString()).getAsJsonObject();
+                        String action = jsonEntry.get("action").getAsString();
+                        String timestamp = jsonEntry.get("timestamp").getAsString();
+                        System.out.println("<\t" + action + " " + timestamp);
+                    }
+                }
+            }
+            if (responseId == 1) System.err.println("< There is no user logged");
+
         } catch (IOException e) {
             System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
         }
