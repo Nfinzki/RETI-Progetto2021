@@ -47,8 +47,8 @@ public class User {
         return tag;
     }
 
-    public Set<Integer> getPosts() {
-        return blog;
+    public Set<String> getFollowed() {
+        return followed;
     }
 
     public String[] getCommonTags(User u) {
@@ -88,6 +88,10 @@ public class User {
 
     public boolean removeFollower(String follower) {
         return this.follower.remove(follower);
+    }
+
+    public boolean follows(String user) {
+        return followed.contains(user);
     }
 
     public String getFollowersAsJson() {
