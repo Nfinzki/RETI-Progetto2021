@@ -10,13 +10,13 @@ Funzionalità da sviluppare:
 - [x] listFollowing
 - [x] followUser
 - [x] unfollowUser
-- [ ] viewBlog
+- [x] viewBlog
 - [x] createPost
-- [ ] showFeed
-- [ ] showPost
+- [x] showFeed
+- [x] showPost
 - [x] deletePost
-- [ ] rewinPost
+- [x] rewinPost
 - [x] ratePost
-- [ ] addComment
+- [x] addComment
 - [ ] getWallet
 - [ ] getWalletBitcoin
