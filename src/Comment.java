@@ -17,11 +17,15 @@ public class Comment {
         return idComment;
     }
 
+    public String getAuthor() {
+        return author;
+    }
+
     public String getComment() {
         return author + ": " + content;
     }
 
-    public void setNextId(int id) {
+    public static void setNextId(int id) {
         nextId = id;
     }
 
