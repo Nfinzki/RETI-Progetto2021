@@ -43,6 +43,9 @@ public class ServerMain {
     private static CallbackHandler callbackHandler;
     private static String callbackHandlerService = "RMI-FOLLOWER-CALLBACK";
 
+    private static int calculationTime = 5000;
+    private static int authorPercentage = 50;
+
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
         if (args.length > 1) {
@@ -64,9 +67,11 @@ public class ServerMain {
         callbackHandler = new CallbackHandler();
         initializeRegisterService();
 
+        Thread revenueThread = new Thread(new RevenueCalculator(users, posts, calculationTime, authorPercentage));
+        revenueThread.start();
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
-        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool);
+        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool, revenueThread);
         multiplexChannels(threadPool);
     }
 
