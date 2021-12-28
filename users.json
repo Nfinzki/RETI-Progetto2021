@@ -22,6 +22,26 @@
   }
 },
 {
+  "username": "Lorenzo",
+  "password": "dca8a33727bf20407a9fd29bd76030f66396ee6d12871bf4af25f93c88c28041",
+  "tag": [
+    "musica",
+    "sport",
+    "giochi",
+    "macchine",
+    "fumetti"
+  ],
+  "follower": [],
+  "followed": [
+    "nfinzki"
+  ],
+  "blog": [],
+  "wallet": {
+    "wincoin": 0.0,
+    "transactions": []
+  }
+},
+{
   "username": "luca",
   "password": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
   "tag": [
@@ -39,9 +59,12 @@
 },
 {
   "username": "Stefano",
-  "password": "35a9e381b1a27567549b5f8a6f783c167ebf809f1c4d6a9e367240484d8ce281",
+  "password": "c7c39f4d0fe0660deb57c29a65c47faefbd596a04a2036d0e1532b9386cecf83",
   "tag": [
-    "sport"
+    "musica",
+    "film",
+    "tecnologia",
+    "giochi"
   ],
   "follower": [],
   "followed": [],
@@ -71,25 +94,18 @@
   "username": "nfinzki",
   "password": "9979dd6df879e4f407fdf2823775c77ba2611c8d8e8a29bf0461d87aef5acaeb",
   "tag": [
-    "musica",
-    "sport",
+    "film",
     "tecnologia",
-    "film"
+    "sport"
   ],
-  "follower": [
-    "utente"
-  ],
-  "followed": [
-    "utente",
-    "luca",
-    "mario"
-  ],
+  "follower": [],
+  "followed": [],
   "blog": [
     0,
     1
   ],
   "wallet": {
-    "wincoin": 5.0,
+    "wincoin": 0.0,
     "transactions": []
   }
 }

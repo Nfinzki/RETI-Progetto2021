@@ -14,7 +14,8 @@
   "upvotes": [
     "utente"
   ],
-  "downvotes": []
+  "downvotes": [],
+  "commentsStats": {}
 },
 {
   "idPost": 1,
@@ -31,6 +32,7 @@
   "upvotes": [],
   "downvotes": [
     "utente"
-  ]
+  ],
+  "commentsStats": {}
 }
 ]
