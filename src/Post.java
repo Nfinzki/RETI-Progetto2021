@@ -1,7 +1,5 @@
-import com.google.gson.Gson;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,6 +12,10 @@ public class Post {
     private final Set<Comment> comments;
     private final Set<String> upvotes;
     private final Set<String> downvotes;
+    private final Map<String, Integer> commentsStats;
+    private transient final Set<String> recentUpvotes;
+    private transient final Set<String> recentDownvotes;
+    private transient final Set<String> recentCommenters;
 
     public Post(String author, String postTitle, String postContent) {
         this.idPost = nextIdPost++;
@@ -23,7 +25,11 @@ public class Post {
         comments = ConcurrentHashMap.newKeySet();
         upvotes = ConcurrentHashMap.newKeySet();
         downvotes = ConcurrentHashMap.newKeySet();
+        commentsStats = new ConcurrentHashMap<>();
 
+        recentUpvotes = ConcurrentHashMap.newKeySet();
+        recentDownvotes = ConcurrentHashMap.newKeySet();
+        recentCommenters = ConcurrentHashMap.newKeySet();
     }
 
     public Post(int idPost, String author, String postTitle, String postContent, Set<Comment> comments, Set<String> upvotes, Set<String> downvotes) {
@@ -34,6 +40,11 @@ public class Post {
         this.comments = comments;
         this.upvotes = upvotes;
         this.downvotes = downvotes;
+        commentsStats = new ConcurrentHashMap<>();
+
+        recentUpvotes = ConcurrentHashMap.newKeySet();
+        recentDownvotes = ConcurrentHashMap.newKeySet();
+        recentCommenters = ConcurrentHashMap.newKeySet();
 
         if (idPost >= nextIdPost) nextIdPost = idPost + 1;
     }
@@ -47,15 +58,26 @@ public class Post {
     }
 
     public boolean addUpvote(String user) {
-        return upvotes.add(user);
+        if (upvotes.add(user)) {
+            recentUpvotes.add(user);
+            return true;
+        } else
+            return false;
     }
 
     public boolean addDownvote(String user) {
-        return downvotes.add(user);
+        if (downvotes.add(user)) {
+            recentDownvotes.add(user);
+            return true;
+        } else
+            return false;
     }
 
     public void addComment(Comment comment) {
-        this.comments.add(comment);
+        comments.add(comment);
+        recentCommenters.add(comment.getAuthor());
+
+        commentsStats.merge(comment.getAuthor(), 1, Integer::sum);
     }
 
     public boolean containsUpvote(String user) {
@@ -64,6 +86,29 @@ public class Post {
 
     public boolean containsDownvote(String user) {
         return downvotes.contains(user);
+    }
+
+    public int getRecentUpvotesAndReset() {
+        int upvotes = recentUpvotes.size();
+        recentUpvotes.clear();
+        return upvotes;
+    }
+
+    public int getRecentDownvotesAndReset() {
+        int downvotes = recentDownvotes.size();
+        recentDownvotes.clear();
+        return downvotes;
+    }
+
+    public Set<String> getRecentCommenters() {
+        Set<String> copy = new HashSet<String>(recentCommenters);
+        recentCommenters.clear();
+
+        return copy;
+    }
+
+    public int getNumberOfComments(String username) {
+        return commentsStats.get(username);
     }
 
     public String toJson() {
