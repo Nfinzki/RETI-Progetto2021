@@ -23,18 +23,20 @@ public class ShutdownHandler {
     private final Map<String, User> users;
     private final Map<Integer, Post> posts;
     private final ThreadPoolExecutor threadPool;
-    //TODO Aggiungere i thread da interrompere
+    private final Thread revenueThread;
 
-    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool) {
+    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, Thread revenueThread) {
         this.usersFile = usersFile;
         this.postsFile = postsFile;
         this.users = users;
         this.posts = posts;
         this.threadPool = threadPool;
+        this.revenueThread = revenueThread;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 threadPool.shutdown();
+                revenueThread.interrupt();
 
                 //Saves the server state
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
