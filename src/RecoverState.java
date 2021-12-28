@@ -170,7 +170,7 @@ public class RecoverState {
             Comment comment = gson.fromJson(jsonReader, Comment.class);
             comments.add(comment);
 
-            if (comment.getId() > nextId) comment.setNextId(comment.getId() + 1);
+            if (comment.getId() >= nextId) Comment.setNextId(comment.getId() + 1);
         }
         jsonReader.endArray(); //Removes the ']'
         return comments;
