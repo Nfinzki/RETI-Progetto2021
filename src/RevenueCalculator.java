@@ -1,3 +1,8 @@
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -7,55 +12,65 @@ public class RevenueCalculator implements Runnable{ //TODO Aggiungere multicast
     private final Map<Integer, Post> posts;
     private final int calculationTime;
     private final int authorPercentage;
+    private final String multicastIP;
+    private final int multicastPort;
     private final Map<Integer, Integer> postIteration;
 
-    public RevenueCalculator(Map<String, User> users, Map<Integer, Post> posts, int calculationTime, int authorPercentage) {
+    public RevenueCalculator(Map<String, User> users, Map<Integer, Post> posts, int calculationTime, int authorPercentage, String multicastIP, int multicastPort) {
         if (authorPercentage < 0 || authorPercentage > 100) throw new IllegalArgumentException("authorPercentage is not a percentage");
         this.users = users;
         this.posts = posts;
         this.calculationTime = calculationTime;
         this.authorPercentage = authorPercentage;
+        this.multicastIP = multicastIP;
+        this.multicastPort = multicastPort;
 
         this.postIteration = new HashMap<>();
     }
 
     public void run() {
-        while (true) {
-            System.out.println("Calculating revenue");
-            for (Post post : posts.values()) {
-                double gain = 0;
-                Set<String> commenterUsernames = post.getRecentCommenters();
-                synchronized (post) {
-                    Integer iterations = postIteration.get(post.getIdPost());
-                    if (iterations == null) iterations = 1;
+        try (MulticastSocket multicastGroup = new MulticastSocket()) {
+            InetAddress address = InetAddress.getByName(multicastIP);
 
-                    int upvotes = post.getRecentUpvotesAndReset();
-                    int downvotes = post.getRecentDownvotesAndReset();
-                    gain = (Math.log(Math.max(upvotes - downvotes, 0) + 1) + Math.log(getSecondLogArg(post, commenterUsernames) + 1)) / iterations;
+            while (true) {
+                System.out.println("Calculating revenue");
+                for (Post post : posts.values()) {
+                    double gain = 0;
+                    Set<String> commenterUsernames = post.getRecentCommenters();
+                    synchronized (post) {
+                        Integer iterations = postIteration.get(post.getIdPost());
+                        if (iterations == null) iterations = 1;
 
-                    postIteration.put(post.getIdPost(), iterations + 1);
+                        int upvotes = post.getRecentUpvotesAndReset();
+                        int downvotes = post.getRecentDownvotesAndReset();
+                        gain = (Math.log(Math.max(upvotes - downvotes, 0) + 1) + Math.log(getSecondLogArg(post, commenterUsernames) + 1)) / iterations;
+
+                        postIteration.put(post.getIdPost(), iterations + 1);
+                    }
+
+                    double authorGain = (gain * authorPercentage) / 100;
+                    double commentersGain = (gain - authorGain);
+                    double singleCommenterGain = commentersGain / commenterUsernames.size();
+
+                    if (authorGain == 0.0 && commentersGain == 0.0) continue;
+
+                    users.get(post.getAuthor()).getWallet().addWincoin(authorGain);
+                    System.out.println("Author " + post.getAuthor() + " got " + authorGain);
+                    for (String user : commenterUsernames) {
+                        users.get(user).getWallet().addWincoin(singleCommenterGain);
+                        System.out.println("Commenter " + user + " got " + singleCommenterGain);
+                    }
                 }
 
-                double authorGain = (gain * authorPercentage) / 100;
-                double commentersGain = (gain - authorGain);
-                double singleCommenterGain = commentersGain / commenterUsernames.size();
+                byte []notifyRevenueCalculation = "Reward calculated".getBytes();
+                DatagramPacket packet = new DatagramPacket(notifyRevenueCalculation, notifyRevenueCalculation.length, address, multicastPort);
+                multicastGroup.send(packet);
 
-                if (authorGain == 0.0 && commentersGain == 0.0) continue;
-
-                users.get(post.getAuthor()).getWallet().addWincoin(authorGain);
-                System.out.println("Author " + post.getAuthor() + " got " + authorGain);
-                for (String user : commenterUsernames) {
-                    users.get(user).getWallet().addWincoin(singleCommenterGain);
-                    System.out.println("Commenter " + user + " got " + singleCommenterGain);
-                }
-            }
-
-            try {
                 Thread.sleep(calculationTime);
-            } catch (InterruptedException e) {
-                return;
             }
-        }
+        } catch (IOException e) {
+            System.err.println("Error while notifying that the revenue is calculated (" + e.getMessage() + ")");
+        } catch (InterruptedException ignored) {}
     }
 
     private double getSecondLogArg(Post post, Set<String> commenterUsernames) {
