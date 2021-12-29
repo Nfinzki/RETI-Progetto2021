@@ -42,6 +42,12 @@ public class RecoverState {
                 //Reads downvote
                 Set<String> downvotes = getStringSetFromJson(jsonReader);
 
+                //Reads commentStats
+                Map<String, Integer> commentStats = getCommentStatFromJson(jsonReader);
+
+                //Reads users that rewinned this post
+                Set<String> rewinner = getStringSetFromJson(jsonReader);
+
                 //End post
                 jsonReader.endObject();
 
@@ -55,7 +61,9 @@ public class RecoverState {
                                 postContent,
                                 comments,
                                 upvotes,
-                                downvotes
+                                downvotes,
+                                commentStats,
+                                rewinner
                         )
                 );
             }
@@ -108,7 +116,6 @@ public class RecoverState {
                 Gson gson = new Gson();
                 jsonReader.nextName();
                 Wallet wallet = gson.fromJson(jsonReader, Wallet.class);
-                //double wincoin = getWincoinFromJson(jsonReader);
 
                 //End user
                 jsonReader.endObject();
@@ -124,7 +131,6 @@ public class RecoverState {
                                 follower,
                                 followed,
                                 blog,
-                                //new Wallet(wincoin)
                                 wallet
                         )
                 );
@@ -136,16 +142,6 @@ public class RecoverState {
         } catch (IOException e) {
             System.err.println("I/O Error: " + e.getMessage());
         }
-    }
-
-    private static double getWincoinFromJson(JsonReader jsonReader) throws IOException {
-        jsonReader.nextName();
-        //Removes '{'
-        jsonReader.beginObject();
-        jsonReader.nextName();
-        double wincoin = jsonReader.nextDouble();
-        jsonReader.endObject(); //Removes '}'
-        return wincoin;
     }
 
     private static Set<String> getStringSetFromJson(JsonReader jsonReader) throws IOException {
@@ -207,5 +203,20 @@ public class RecoverState {
         //Reads id
         jsonReader.nextName();
         return jsonReader.nextInt();
+    }
+
+    private static Map<String, Integer> getCommentStatFromJson(JsonReader jsonReader) throws IOException{
+        jsonReader.nextName();
+        //Removes the '['
+        jsonReader.beginObject();
+        Map<String, Integer> commentStat = new ConcurrentHashMap<>();
+
+        while (jsonReader.hasNext()) { //Reads all the elements in the array
+            commentStat.put(jsonReader.nextName(), jsonReader.nextInt());
+        }
+
+        jsonReader.endObject(); //Removes the ']'
+
+        return commentStat;
     }
 }
