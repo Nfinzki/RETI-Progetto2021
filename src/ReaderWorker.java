@@ -115,7 +115,7 @@ public class ReaderWorker implements Runnable {
     private void setResponse(int code, String response) {
         byteBuffer.clear();
         byteBuffer.putInt(code);
-        byteBuffer.putInt(response.length());
+        byteBuffer.putInt(response.getBytes().length);
         byteBuffer.put(response.getBytes());
     }
 
@@ -149,7 +149,8 @@ public class ReaderWorker implements Runnable {
             if (user != null) {
                 if (user.comparePassword(Hash.bytesToHex(Hash.sha256(username + password)))) {
                     loggedUsers.put(username, client.socket());
-                    setResponse(0);
+                    String multicastReferences = "{\"multicastIP\": \"" + ServerMain.multicastIP + "\", \"multicastPort\": " + ServerMain.multicastPort + "}";
+                    setResponse(0, multicastReferences);
                 } else
                     setResponse(1);
             } else {
@@ -296,20 +297,30 @@ public class ReaderWorker implements Runnable {
         setResponse(0);
     }
 
-    private void deletePost(String username, int idPost) { //TODO Cancellare il post anche da chi lo rewinna
+    private void deletePost(String username, int idPost) {
         if (!loggedUsers.containsKey(username)) {
             setResponse(1);
             return;
         }
 
+        Post post = posts.get(idPost);
+        if (post == null) {
+            setResponse(2);
+            return;
+        }
+
         User user = users.get(username);
         if (!user.ownsPost(idPost)) {
-            setResponse(2);
+            setResponse(3);
             return;
         }
 
         posts.remove(idPost);
         user.removePost(idPost);
+        for (String rewinner : post.getRewinner()) {
+            User rewinnerUser = users.get(rewinner);
+            rewinnerUser.removePost(idPost);
+        }
         setResponse(0);
     }
 
@@ -332,6 +343,7 @@ public class ReaderWorker implements Runnable {
         User user = users.get(username);
         boolean firstEntry = true;
         String response = "[";
+
         for (int postId : user.getBlog()) {
             if (!firstEntry) response += ", ";
             Post post = posts.get(postId);
@@ -397,8 +409,11 @@ public class ReaderWorker implements Runnable {
         }
 
         User user = users.get(username);
-        user.addPost(post.getIdPost());
-        setResponse(0);
+        if (user.addPost(post.getIdPost())) {
+            post.addRewinner(username);
+            setResponse(0);
+        } else
+            setResponse(3);
     }
 
     private void addComment(int idPost, String comment, String username) {
