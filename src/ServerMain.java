@@ -23,8 +23,8 @@ public class ServerMain {
     private static String serverIP = "localhost";
     private static int tcpPort = 2222;
     private static int udpPort = 3333;
-    private static String multicastIP = "239.255.32.32";
-    private static int multicastPort = 4444;
+    public static String multicastIP = "239.255.32.32";
+    public static int multicastPort = 4444;
     private static String registryHost = "localhost";
     private static int registryPort = 55555;
     private static String registerServiceName = "RMI-REGISTER";
@@ -67,7 +67,7 @@ public class ServerMain {
         callbackHandler = new CallbackHandler();
         initializeRegisterService();
 
-        Thread revenueThread = new Thread(new RevenueCalculator(users, posts, calculationTime, authorPercentage));
+        Thread revenueThread = new Thread(new RevenueCalculator(users, posts, calculationTime, authorPercentage, multicastIP, multicastPort));
         revenueThread.start();
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
