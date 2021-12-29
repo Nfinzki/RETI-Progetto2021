@@ -102,7 +102,8 @@
   "followed": [],
   "blog": [
     0,
-    1
+    1,
+    2
   ],
   "wallet": {
     "wincoin": 0.0,

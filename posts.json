@@ -15,7 +15,10 @@
     "utente"
   ],
   "downvotes": [],
-  "commentsStats": {}
+  "commentsStats": {
+    "utente": 1
+  },
+  "rewinner": []
 },
 {
   "idPost": 1,
@@ -33,6 +36,20 @@
   "downvotes": [
     "utente"
   ],
-  "commentsStats": {}
+  "commentsStats": {
+    "utente": 1
+  },
+  "rewinner": []
+},
+{
+  "idPost": 2,
+  "author": "nfinzki",
+  "postTitle": "Nuovo post di prova",
+  "postContent": "Questo è il mio ennesimo post di prova. Serve per testare i caratteri accentati",
+  "comments": [],
+  "upvotes": [],
+  "downvotes": [],
+  "commentsStats": {},
+  "rewinner": []
 }
 ]
