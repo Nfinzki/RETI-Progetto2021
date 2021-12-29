@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -35,9 +34,12 @@ public class ClientMain {
 
     private static String currentLoggedUser = null;
 
+    private static Thread multicastThread;
+
     private static List<String> followers;
     private static CallbackHandlerInterface serverCallbackHandler = null;
     private static NotifyNewFollower callbackStub = null;
+    private static NotifyNewFollower followerCallback = null;
 
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
@@ -281,7 +283,7 @@ public class ClientMain {
         buffer.clear();
 
         //Puts the command length
-        buffer.putInt(command.length());
+        buffer.putInt(command.getBytes().length);
         //Puts the command
         buffer.put(command.getBytes());
 
@@ -313,9 +315,13 @@ public class ClientMain {
                 socketChannel.close();
                 socketChannel = null;
 
+                multicastThread.interrupt();
+
                 followers = null;
                 serverCallbackHandler.unregisterForCallback(currentLoggedUser, callbackStub);
                 currentLoggedUser = null;
+                UnicastRemoteObject.unexportObject(followerCallback, true);
+                followerCallback = null;
             } else {
                 System.err.println("< " + currentLoggedUser + " is not logged in");
             }
@@ -355,8 +361,19 @@ public class ClientMain {
                 System.out.println("< " + command.split(" ")[1] + " logged in");
                 currentLoggedUser = command.split(" ")[1];
 
+                int strLen = buffer.getInt();
+                byte []strByte = new byte[strLen];
+                buffer.get(strByte);
+                String multicastReferences = new String(strByte);
+
+                JsonObject jsonObject = JsonParser.parseString(multicastReferences).getAsJsonObject();
+                String multicastIP = jsonObject.get("multicastIP").getAsString();
+                int multicastPort = jsonObject.get("multicastPort").getAsInt();
+                multicastThread = new Thread(new NotifyHandler(multicastIP, multicastPort));
+                multicastThread.start();
+
                 followers = new ArrayList<>();
-                NotifyNewFollower followerCallback = new NotifyNewFollowerService(followers);
+                followerCallback = new NotifyNewFollowerService(followers);
                 callbackStub = (NotifyNewFollower) UnicastRemoteObject.exportObject(followerCallback, 0);
                 serverCallbackHandler.registerForCallback(currentLoggedUser, callbackStub);
                 getFollowers(command.split(" ")[1]);
@@ -495,7 +512,8 @@ public class ClientMain {
             int responseId = buffer.getInt();
             if (responseId == 0) System.out.println("< Post deleted correctly");
             if (responseId == 1) System.err.println("< There is no user logged");
-            if (responseId == 2) System.err.println("< You don't own this post");
+            if (responseId == 2) System.err.println("< This post doesn't exists");
+            if (responseId == 3) System.err.println("< You don't own this post");
         } catch (IOException e) {
             System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
         }
@@ -679,6 +697,7 @@ public class ClientMain {
             if (responseId == 0) System.out.println("< Post rewinned correctly");
             if (responseId == 1) System.err.println("< There is no user logged");
             if (responseId == 2) System.err.println("< This post doesn't exists");
+            if (responseId == 3) System.err.println("< You've already rewinned this post");
         } catch (IOException e) {
             System.err.println("< Error during comunication with server (" + e.getMessage() + ")");
         }
