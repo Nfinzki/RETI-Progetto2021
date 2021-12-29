@@ -13,6 +13,8 @@ public class Post {
     private final Set<String> upvotes;
     private final Set<String> downvotes;
     private final Map<String, Integer> commentsStats;
+    private final Set<String> rewinner;
+
     private transient final Set<String> recentUpvotes;
     private transient final Set<String> recentDownvotes;
     private transient final Set<String> recentCommenters;
@@ -26,13 +28,14 @@ public class Post {
         upvotes = ConcurrentHashMap.newKeySet();
         downvotes = ConcurrentHashMap.newKeySet();
         commentsStats = new ConcurrentHashMap<>();
+        rewinner = ConcurrentHashMap.newKeySet();
 
         recentUpvotes = ConcurrentHashMap.newKeySet();
         recentDownvotes = ConcurrentHashMap.newKeySet();
         recentCommenters = ConcurrentHashMap.newKeySet();
     }
 
-    public Post(int idPost, String author, String postTitle, String postContent, Set<Comment> comments, Set<String> upvotes, Set<String> downvotes) {
+    public Post(int idPost, String author, String postTitle, String postContent, Set<Comment> comments, Set<String> upvotes, Set<String> downvotes, Map<String, Integer> commentsStats, Set<String> rewinner) {
         this.idPost = idPost;
         this.author = author;
         this.postTitle = postTitle;
@@ -40,7 +43,8 @@ public class Post {
         this.comments = comments;
         this.upvotes = upvotes;
         this.downvotes = downvotes;
-        commentsStats = new ConcurrentHashMap<>();
+        this.commentsStats = commentsStats;
+        this.rewinner = rewinner;
 
         recentUpvotes = ConcurrentHashMap.newKeySet();
         recentDownvotes = ConcurrentHashMap.newKeySet();
@@ -78,6 +82,10 @@ public class Post {
         recentCommenters.add(comment.getAuthor());
 
         commentsStats.merge(comment.getAuthor(), 1, Integer::sum);
+    }
+
+    public boolean addRewinner(String username) {
+        return  rewinner.add(username);
     }
 
     public boolean containsUpvote(String user) {
@@ -123,6 +131,10 @@ public class Post {
         serializedPost += "]}";
 
         return serializedPost;
+    }
+
+    public Set<String> getRewinner() {
+        return rewinner;
     }
 
     public String basicInfoToJson() {
