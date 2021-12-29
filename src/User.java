@@ -62,8 +62,8 @@ public class User {
         return commonTags.toArray(new String[0]);
     }
 
-    public void addPost(int postId) {
-        blog.add(postId);
+    public boolean addPost(int postId) {
+        return blog.add(postId);
     }
 
     public boolean ownsPost(int idPost) {
