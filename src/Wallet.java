@@ -1,6 +1,8 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,5 +52,18 @@ public class Wallet {
             System.err.println("Error while communicating with random.org: (" + e.getMessage() + ")");
             return -1;
         }
+    }
+
+    public void toJsonFile(JsonWriter writer) throws IOException {
+        writer.beginObject();
+        writer.name("wincoin").value(wincoin);
+
+        writer.name("transactions");
+        writer.beginArray();
+        for (Transaction transaction : transactions)
+            transaction.toJsonFile(writer);
+        writer.endArray();
+        writer.endObject();
+        writer.flush();
     }
 }

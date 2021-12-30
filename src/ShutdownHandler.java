@@ -1,9 +1,11 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonWriter;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -40,7 +42,12 @@ public class ShutdownHandler {
 
                 //Saves the server state
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                serverStateToJson(gson, usersFile, users);
+                //serverStateToJson(gson, usersFile, users);
+                try {
+                    prova("prova.json");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 serverStateToJson(gson, postsFile, posts);
 
                 if (!threadPool.isTerminated()) threadPool.shutdownNow();
@@ -49,7 +56,23 @@ public class ShutdownHandler {
 
     }
 
-    private <K, V> void serverStateToJson(Gson gson, String jsonFile, Map<K, V> map) {
+    private void prova(String jsonFile) throws IOException {
+        JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(jsonFile)));
+        writer.setIndent("  ");
+
+        writer.beginArray();
+        for (User p : users.values())
+            p.toJsonFile(writer);
+        writer.endArray();
+        writer.flush();
+        writer.close();
+
+    }
+    //TODO Creare un'interfaccia BufferedSerialization che implementa il metodo toJsonFile
+    //Nella Map qua sotto devo mettere V implements BufferedSerialization
+    //Dovrebbe essere fatta così. Poi basta cambiare la chiamata sopra (non serve più Gson gson)
+
+    private <K, V extends BufferedSerialization> void serverStateToJson(Gson gson, String jsonFile, Map<K, V> map) {
         try (WritableByteChannel out = Channels.newChannel(new FileOutputStream(jsonFile))){
             //Initializes ByteBuffer
             int bufferSize = 1024 * 16;
