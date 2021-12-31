@@ -46,7 +46,7 @@ public class ServerMain {
     private static int authorPercentage = 50;
 
     private static final AtomicBoolean stateChanged = new AtomicBoolean(false);
-    private static int saveStateTime = 10000; //15 * 6000;
+    private static int saveStateTime = 15 * 6000;
 
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
