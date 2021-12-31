@@ -457,10 +457,13 @@ public class ClientMain {
                 String result = new String(resultByte);
 
                 String []users = result.split(" \n");
-                System.out.println("<\tUser\t|\tTag\t");
-                System.out.println("<---------------------------------");
+                System.out.printf("< %10s%10s%10s\n", "Users", "|", "Tags");
+                System.out.println("< ----------------------------------------");
                 for (String user : users) {
-                    System.out.println("<\t" + user + "\t\n");
+                    String username = user.substring(0, user.indexOf(" "));
+                    String tags = user.substring(user.indexOf(" ") + 2, user.indexOf("]"));
+
+                    System.out.printf("< %10s%10s%22s\n", username, "|", tags);
                 }
 
             } else {
@@ -519,7 +522,7 @@ public class ClientMain {
         }
     }
 
-    private static void listFollowing(String command) {
+    private static void listFollowing(String command) { //TODO Aggiungere che il server invia anche i tag in comune
         if (socketChannel == null || currentLoggedUser == null) {
             System.err.println("< There is no user logged");
             return;
@@ -574,6 +577,9 @@ public class ClientMain {
                 buffer.get(strByte);
                 String blogPosts = new String(strByte);
 
+                System.out.printf("< %-4s %s %-14s %s %10s\n", "Id", "|", "Author", "|", "Title");
+                System.out.println("< ---------------------------------------------------------");
+
                 JsonArray jsonArray = JsonParser.parseString(blogPosts).getAsJsonArray();
                 for (JsonElement jsonElement : jsonArray) {
                     JsonObject jsonEntry = JsonParser.parseString(jsonElement.toString()).getAsJsonObject();
@@ -581,7 +587,7 @@ public class ClientMain {
                     String author = jsonEntry.get("author").getAsString();
                     String postTitle = jsonEntry.get("postTitle").getAsString();
 
-                    System.out.println("< " + idPost + " " + author + " \"" + postTitle + "\"");
+                    System.out.printf("< %-4d %s %-14s %s %10s\n", idPost, "|", author, "|", postTitle);
                 }
             }
             if (responseId == 1) System.err.println("< There is no user logged");
@@ -663,6 +669,9 @@ public class ClientMain {
                 buffer.get(strByte);
                 String blogPosts = new String(strByte);
 
+                System.out.printf("< %-4s %s %-14s %s %10s\n", "Id", "|", "Author", "|", "Title");
+                System.out.println("< ---------------------------------------------------------");
+
                 JsonArray jsonArray = JsonParser.parseString(blogPosts).getAsJsonArray();
                 for (JsonElement jsonElement : jsonArray) {
                     JsonObject jsonEntry = JsonParser.parseString(jsonElement.toString()).getAsJsonObject();
@@ -670,7 +679,7 @@ public class ClientMain {
                     String author = jsonEntry.get("author").getAsString();
                     String postTitle = jsonEntry.get("postTitle").getAsString();
 
-                    System.out.println("< " + idPost + " " + author + " \"" + postTitle + "\"");
+                    System.out.printf("< %-4d %s %-14s %s %10s\n", idPost, "|", author, "|", postTitle);
                 }
             }
             if (responseId == 1) System.err.println("< There is no user logged");
