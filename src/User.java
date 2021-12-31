@@ -121,11 +121,6 @@ public class User implements BufferedSerialization{
         return gson.toJson(wallet);
     }
 
-    public void prova() {
-        Gson gson = new Gson();
-        System.out.println(gson.toJson(tag));
-    }
-
     public void toJsonFile(JsonWriter writer) throws IOException{
         writer.beginObject();
         writer.name("username").value(username);
@@ -157,6 +152,7 @@ public class User implements BufferedSerialization{
             writer.value(integer);
         }
         writer.endArray();
+        writer.flush();
     }
 
     private void stringCollectionToJson(JsonWriter writer, String name, Collection<String> collection) throws IOException{
@@ -166,6 +162,7 @@ public class User implements BufferedSerialization{
             writer.value(s);
         }
         writer.endArray();
+        writer.flush();
     }
 
     public String toString() {
