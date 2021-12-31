@@ -1,14 +1,3 @@
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonWriter;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -26,48 +15,31 @@ public class ShutdownHandler {
     private final Map<Integer, Post> posts;
     private final ThreadPoolExecutor threadPool;
     private final Thread revenueThread;
+    private final Thread saveStateThread;
 
-    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, Thread revenueThread) {
+    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, Thread revenueThread, Thread saveStateThread) {
         this.usersFile = usersFile;
         this.postsFile = postsFile;
         this.users = users;
         this.posts = posts;
         this.threadPool = threadPool;
         this.revenueThread = revenueThread;
+        this.saveStateThread = saveStateThread;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 threadPool.shutdown();
                 revenueThread.interrupt();
+                saveStateThread.interrupt();
 
+                //TODO Conviene fare un salvataggio di sicurezza? Oppure mi fido del booleano?
                 //Saves the server state
-                serverStateToJson(users, usersFile);
-                serverStateToJson(posts, postsFile);
+                SaveState.serverStateToJson(users, usersFile);
+                SaveState.serverStateToJson(posts, postsFile);
 
                 if (!threadPool.isTerminated()) threadPool.shutdownNow();
             }
         });
 
-    }
-
-    private <K, V extends BufferedSerialization> void serverStateToJson(Map<K, V> map, String jsonFile) {
-        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(jsonFile)))) {
-            writer.setIndent("  ");
-            writer.beginArray();
-
-            //Writes users to the json file
-            for(V value : map.values()) {
-                value.toJsonFile(writer);
-            }
-
-            writer.endArray();
-            writer.flush();
-        } catch (FileNotFoundException e) {
-            System.err.println("FileNotFoundException while saving the server state: " + e.getMessage());
-            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("IOException while saving the server state: " + e.getMessage());
-            System.exit(1);
-        }
     }
 }
