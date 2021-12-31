@@ -1,9 +1,14 @@
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Post {
+public class Post implements BufferedSerialization {
     private static int nextIdPost = 0;
     private final int idPost;
     private final String author;
@@ -139,6 +144,52 @@ public class Post {
 
     public String basicInfoToJson() {
         return "{\"idPost\": " + idPost + ", \"author\": \"" + author + "\", \"postTitle\": \"" + postTitle + "\" }";
+    }
+
+    public void toJsonFile(JsonWriter writer) throws IOException {
+        writer.beginObject();
+        writer.name("idPost").value(idPost);
+        writer.name("author").value(author);
+        writer.name("postTitle").value(postTitle);
+        writer.name("postContent").value(postContent);
+        commentsCollectionToJson(writer, "comments", comments);
+        stringCollectionToJson(writer, "upvotes", upvotes);
+        stringCollectionToJson(writer, "downvotes", downvotes);
+        mapToJson(writer, "commentsStats", commentsStats);
+        stringCollectionToJson(writer, "rewinner", rewinner);
+        writer.endObject();
+    }
+
+    private void commentsCollectionToJson(JsonWriter writer, String name, Collection<Comment> collection) throws IOException {
+        Gson gson = new Gson();
+
+        writer.name(name);
+        writer.beginArray();
+        for (Comment comment : collection)
+            gson.toJson(comment, Comment.class, writer);
+        writer.endArray();
+        writer.flush();
+    }
+
+    private void stringCollectionToJson(JsonWriter writer, String name, Collection<String> collection) throws IOException {
+        writer.name(name);
+        writer.beginArray();
+        for (String s : collection) {
+            writer.value(s);
+        }
+        writer.endArray();
+        writer.flush();
+    }
+
+    private void mapToJson(JsonWriter writer, String name, Map<String, Integer> map) throws IOException {
+        writer.name(name);
+        writer.beginObject();
+
+        for (String key : map.keySet())
+            writer.name(key).value(map.get(key));
+
+        writer.endObject();
+        writer.flush();
     }
 
     public String toString() {
