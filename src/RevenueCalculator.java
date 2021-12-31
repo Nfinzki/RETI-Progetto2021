@@ -6,8 +6,9 @@ import java.net.MulticastSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class RevenueCalculator implements Runnable{ //TODO Aggiungere multicast
+public class RevenueCalculator implements Runnable{
     private final Map<String, User> users;
     private final Map<Integer, Post> posts;
     private final int calculationTime;
@@ -15,8 +16,9 @@ public class RevenueCalculator implements Runnable{ //TODO Aggiungere multicast
     private final String multicastIP;
     private final int multicastPort;
     private final Map<Integer, Integer> postIteration;
+    private final AtomicBoolean stateChanged;
 
-    public RevenueCalculator(Map<String, User> users, Map<Integer, Post> posts, int calculationTime, int authorPercentage, String multicastIP, int multicastPort) {
+    public RevenueCalculator(Map<String, User> users, Map<Integer, Post> posts, int calculationTime, int authorPercentage, String multicastIP, int multicastPort, AtomicBoolean stateChanged) {
         if (authorPercentage < 0 || authorPercentage > 100) throw new IllegalArgumentException("authorPercentage is not a percentage");
         this.users = users;
         this.posts = posts;
@@ -24,6 +26,7 @@ public class RevenueCalculator implements Runnable{ //TODO Aggiungere multicast
         this.authorPercentage = authorPercentage;
         this.multicastIP = multicastIP;
         this.multicastPort = multicastPort;
+        this.stateChanged = stateChanged;
 
         this.postIteration = new HashMap<>();
     }
@@ -60,6 +63,7 @@ public class RevenueCalculator implements Runnable{ //TODO Aggiungere multicast
                         users.get(user).getWallet().addWincoin(singleCommenterGain);
                         System.out.println("Commenter " + user + " got " + singleCommenterGain);
                     }
+                    stateChanged.set(true);
                 }
 
                 byte []notifyRevenueCalculation = "Reward calculated".getBytes();

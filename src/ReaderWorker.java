@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ReaderWorker implements Runnable {
     private final SelectionKey key;
@@ -23,7 +24,9 @@ public class ReaderWorker implements Runnable {
 
     private final Selector selector;
 
-    public ReaderWorker(SelectionKey key, Map<String, User> users, Map<Integer, Post> posts, Map<String, Socket> loggedUsers, CallbackHandler callbackHandler, Set<Registable> readyToBeRegistered, Selector selector) {
+    private final AtomicBoolean stateChanged;
+
+    public ReaderWorker(SelectionKey key, Map<String, User> users, Map<Integer, Post> posts, Map<String, Socket> loggedUsers, CallbackHandler callbackHandler, Set<Registable> readyToBeRegistered, Selector selector, AtomicBoolean stateChanged) {
         this.key = key;
         this.users = users;
         this.posts = posts;
@@ -31,6 +34,7 @@ public class ReaderWorker implements Runnable {
         this.callbackHandler = callbackHandler;
         this.readyToBeRegistered = readyToBeRegistered;
         this.selector = selector;
+        this.stateChanged = stateChanged;
 
         this.client = (SocketChannel) key.channel();
         this.byteBuffer = (ByteBuffer) key.attachment();
@@ -203,6 +207,7 @@ public class ReaderWorker implements Runnable {
 
         try {
             if (users.get(username).addFollowed(userToFollow) && userToFollowObj.addFollower(username)) {
+                stateChanged.set(true);
                 setResponse(0);
                 callbackHandler.notifyNewFollower(userToFollow, username);
             } else
@@ -227,6 +232,7 @@ public class ReaderWorker implements Runnable {
 
         try {
             if (users.get(username).removeFollowed(userToUnfollow) && userToUnfollowObj.removeFollower(username)) {
+                stateChanged.set(true);
                 setResponse(0);
                 callbackHandler.notifyLostFollower(userToUnfollow, username);
             } else
@@ -265,6 +271,7 @@ public class ReaderWorker implements Runnable {
 
         if (vote.equals("+1")) post.addUpvote(username);
         if (vote.equals("-1")) post.addDownvote(username);
+        stateChanged.set(true);
         setResponse(0);
     }
 
@@ -294,6 +301,7 @@ public class ReaderWorker implements Runnable {
         User user = users.get(username);
         user.addPost(newPost.getIdPost());
 
+        stateChanged.set(true);
         setResponse(0);
     }
 
@@ -321,6 +329,7 @@ public class ReaderWorker implements Runnable {
             User rewinnerUser = users.get(rewinner);
             rewinnerUser.removePost(idPost);
         }
+        stateChanged.set(true);
         setResponse(0);
     }
 
@@ -411,6 +420,7 @@ public class ReaderWorker implements Runnable {
         User user = users.get(username);
         if (user.addPost(post.getIdPost())) {
             post.addRewinner(username);
+            stateChanged.set(true);
             setResponse(0);
         } else
             setResponse(3);
@@ -444,6 +454,7 @@ public class ReaderWorker implements Runnable {
         }
 
         post.addComment(new Comment(username, comment));
+        stateChanged.set(true);
         setResponse(0);
     }
 
