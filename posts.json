@@ -1,55 +1,55 @@
 [
-{
-  "idPost": 0,
-  "author": "nfinzki",
-  "postTitle": "Primo post",
-  "postContent": "Questo sarebbe il mio primo post",
-  "comments": [
-    {
-      "idComment": 0,
-      "author": "utente",
-      "content": "Questo post non serve a niente, vergognati!"
-    }
-  ],
-  "upvotes": [
-    "utente"
-  ],
-  "downvotes": [],
-  "commentsStats": {
-    "utente": 1
+  {
+    "idPost": 0,
+    "author": "nfinzki",
+    "postTitle": "Primo post",
+    "postContent": "Questo sarebbe il mio primo post",
+    "comments": [
+      {
+        "idComment": 0,
+        "author": "utente",
+        "content": "Questo post non serve a niente, vergognati!"
+      }
+    ],
+    "upvotes": [
+      "utente"
+    ],
+    "downvotes": [],
+    "commentsStats": {
+      "utente": 1
+    },
+    "rewinner": []
   },
-  "rewinner": []
-},
-{
-  "idPost": 1,
-  "author": "nfinzki",
-  "postTitle": "Il mio secondo post",
-  "postContent": "Ci sto iniziando a prendere gusto",
-  "comments": [
-    {
-      "idComment": 0,
-      "author": "utente",
-      "content": "Sei senza speranza"
-    }
-  ],
-  "upvotes": [],
-  "downvotes": [
-    "utente"
-  ],
-  "commentsStats": {
-    "utente": 1
+  {
+    "idPost": 1,
+    "author": "nfinzki",
+    "postTitle": "Il mio secondo post",
+    "postContent": "Ci sto iniziando a prendere gusto",
+    "comments": [
+      {
+        "idComment": 0,
+        "author": "utente",
+        "content": "Sei senza speranza"
+      }
+    ],
+    "upvotes": [],
+    "downvotes": [
+      "utente"
+    ],
+    "commentsStats": {
+      "utente": 1
+    },
+    "rewinner": []
   },
-  "rewinner": []
-},
-{
-  "idPost": 2,
-  "author": "nfinzki",
-  "postTitle": "Nuovo post di prova",
-  "postContent": "Questo è il mio ennesimo post di prova. Serve per testare i caratteri accentati",
-  "comments": [],
-  "upvotes": [],
-  "downvotes": [],
-  "commentsStats": {},
-  "rewinner": []
-}
+  {
+    "idPost": 2,
+    "author": "nfinzki",
+    "postTitle": "Nuovo post di prova",
+    "postContent": "Questo è il mio ennesimo post di prova. Serve per testare i caratteri accentati",
+    "comments": [],
+    "upvotes": [],
+    "downvotes": [],
+    "commentsStats": {},
+    "rewinner": []
+  }
 ]
