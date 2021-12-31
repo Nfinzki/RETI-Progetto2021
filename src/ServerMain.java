@@ -42,7 +42,7 @@ public class ServerMain {
     private static CallbackHandler callbackHandler;
     private static String callbackHandlerService = "RMI-FOLLOWER-CALLBACK";
 
-    private static int calculationTime = 5000;
+    private static int calculationTime = 25000;
     private static int authorPercentage = 50;
 
     private static final AtomicBoolean stateChanged = new AtomicBoolean(false);
