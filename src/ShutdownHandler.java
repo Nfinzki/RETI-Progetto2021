@@ -41,14 +41,8 @@ public class ShutdownHandler {
                 revenueThread.interrupt();
 
                 //Saves the server state
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                //serverStateToJson(gson, usersFile, users);
-                try {
-                    prova("prova.json");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                serverStateToJson(gson, postsFile, posts);
+                serverStateToJson(users, usersFile);
+                serverStateToJson(posts, postsFile);
 
                 if (!threadPool.isTerminated()) threadPool.shutdownNow();
             }
@@ -56,61 +50,18 @@ public class ShutdownHandler {
 
     }
 
-    private void prova(String jsonFile) throws IOException {
-        JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(jsonFile)));
-        writer.setIndent("  ");
+    private <K, V extends BufferedSerialization> void serverStateToJson(Map<K, V> map, String jsonFile) {
+        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(jsonFile)))) {
+            writer.setIndent("  ");
+            writer.beginArray();
 
-        writer.beginArray();
-        for (User p : users.values())
-            p.toJsonFile(writer);
-        writer.endArray();
-        writer.flush();
-        writer.close();
-
-    }
-    //TODO Creare un'interfaccia BufferedSerialization che implementa il metodo toJsonFile
-    //Nella Map qua sotto devo mettere V implements BufferedSerialization
-    //Dovrebbe essere fatta così. Poi basta cambiare la chiamata sopra (non serve più Gson gson)
-
-    private <K, V extends BufferedSerialization> void serverStateToJson(Gson gson, String jsonFile, Map<K, V> map) {
-        try (WritableByteChannel out = Channels.newChannel(new FileOutputStream(jsonFile))){
-            //Initializes ByteBuffer
-            int bufferSize = 1024 * 16;
-            ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-
-            //Writes first '[' to open the json file
-            buffer.put("[\n".getBytes());
-
-            boolean firstEntry = true;
             //Writes users to the json file
             for(V value : map.values()) {
-                //Writes the ',' before every new user after the first
-                if (!firstEntry) buffer.put(",\n".getBytes());
-
-                //Serializes user
-                String serializedObj = gson.toJson(value);
-
-                //Writes serialized user to the buffer
-                buffer.put(serializedObj.getBytes());
-
-                //Sets the buffer in read mode to write to the file
-                buffer.flip();
-                //Writes to the file
-                while(buffer.hasRemaining()) out.write(buffer);
-
-                //Sets the buffer in write mode
-                buffer.clear();
-
-                firstEntry = false;
+                value.toJsonFile(writer);
             }
 
-            //Writes ']' to close the json file
-            buffer.put("\n]".getBytes());
-            //Sets the buffer in read mode to write to the file
-            buffer.flip();
-            //Writes to the file
-            while(buffer.hasRemaining()) out.write(buffer);
-
+            writer.endArray();
+            writer.flush();
         } catch (FileNotFoundException e) {
             System.err.println("FileNotFoundException while saving the server state: " + e.getMessage());
             System.exit(1);
