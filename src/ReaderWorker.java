@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -179,16 +181,21 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
-        StringBuilder response = new StringBuilder(); //TODO Probabilmente andrebbero inviati uno alla volta
+        boolean firstEntry = true;
+        Gson gson = new Gson();
+        StringBuilder response = new StringBuilder("["); //TODO Probabilmente andrebbero inviati uno alla volta
         User user = users.get(username);
         for (User u : users.values()) {
             if (user != u) {
                 String []commonTags = user.getCommonTags(u);
                 if (commonTags.length == 0) continue;
 
-                response.append(u.getUsername() + " " + Arrays.toString(commonTags) + " \n");
+                if (!firstEntry) response.append(", ");
+                response.append("{\"username\": \"" + u.getUsername() + "\", \"tags\": " + gson.toJson(commonTags) + "}");
+                firstEntry = false;
             }
         }
+        response.append("]");
 
         setResponse(0, response.toString());
     }

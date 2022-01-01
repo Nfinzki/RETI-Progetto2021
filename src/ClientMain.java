@@ -456,14 +456,21 @@ public class ClientMain {
                 buffer.get(resultByte);
                 String result = new String(resultByte);
 
-                String []users = result.split(" \n");
                 System.out.printf("< %10s%10s%10s\n", "Users", "|", "Tags");
                 System.out.println("< ----------------------------------------");
-                for (String user : users) {
-                    String username = user.substring(0, user.indexOf(" "));
-                    String tags = user.substring(user.indexOf(" ") + 2, user.indexOf("]"));
 
-                    System.out.printf("< %10s%10s%22s\n", username, "|", tags);
+                JsonArray jsonArray = JsonParser.parseString(result).getAsJsonArray();
+                for (JsonElement jsonElement : jsonArray) {
+                    JsonObject jsonEntry = JsonParser.parseString(jsonElement.toString()).getAsJsonObject();
+                    String username = jsonEntry.get("username").getAsString();
+
+                    JsonArray jsonTags = jsonEntry.get("tags").getAsJsonArray();
+                    String []tags = new String[jsonTags.size()];
+                    for (int i = 0; i < tags.length; i++) {
+                        tags[i] = jsonTags.get(i).getAsString();
+                    }
+
+                    System.out.printf("< %10s%10s%22s\n", username, "|", Arrays.toString(tags));
                 }
 
             } else {
