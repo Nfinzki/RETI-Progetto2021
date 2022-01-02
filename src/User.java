@@ -101,9 +101,8 @@ public class User implements BufferedSerialization{
         return gson.toJson(follower);
     }
 
-    public String getFollowingAsJson() {
-        Gson gson = new Gson();
-        return gson.toJson(followed);
+    public Set<String> getFollowing() {
+        return followed;
     }
 
     public Set<Integer> getBlog() {

@@ -8,7 +8,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -347,7 +346,18 @@ public class ReaderWorker implements Runnable {
         }
 
         User user = users.get(username);
-        setResponse(0, user.getFollowingAsJson());
+        String response = "[";
+        boolean firstEntry = true;
+        Gson gson = new Gson();
+        for (String u : user.getFollowing()) {
+            if (!firstEntry) response += ",";
+
+            response += "{\"username\": \"" + u + "\", \"tags\": " + gson.toJson(user.getCommonTags(users.get(u))) + "}";
+            firstEntry = false;
+        }
+        response += "]";
+
+        setResponse(0, response);
     }
 
     private void viewBlog(String username) {

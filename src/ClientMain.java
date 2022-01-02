@@ -408,6 +408,7 @@ public class ClientMain {
             String userFollowers = new String(strByte);
 
             if (userFollowers.equals("[]")) return;
+
             getUserFromJson(followers, userFollowers);
 
         } catch (IOException e) {
@@ -416,19 +417,9 @@ public class ClientMain {
     }
 
     private static void getUserFromJson(List<String> list, String jsonString) {
-        String []users = jsonString.split(",");
-        for (int i = 0; i < users.length; i++) {
-            int userLen = users[i].length();
-            if (users.length == 1) {
-                list.add(users[i].substring(2, userLen-2));
-                break;
-            }
-
-            if (i == 0) list.add(users[i].substring(2, userLen-1));
-            if (i == users.length-1) list.add(users[i].substring(1, userLen - 2));
-            if (i != 0 && i != users.length-1) list.add(users[i].substring(1, userLen-1));
-
-        }
+        JsonArray jsonArray = JsonParser.parseString(jsonString).getAsJsonArray();
+        for (JsonElement jsonElement : jsonArray)
+            list.add(jsonElement.getAsString());
     }
 
     private static void listUsers(String command) {
@@ -529,7 +520,7 @@ public class ClientMain {
         }
     }
 
-    private static void listFollowing(String command) { //TODO Aggiungere che il server invia anche i tag in comune
+    private static void listFollowing(String command) {
         if (socketChannel == null || currentLoggedUser == null) {
             System.err.println("< There is no user logged");
             return;
@@ -549,13 +540,23 @@ public class ClientMain {
                 byte []strByte = new byte[strLen];
                 buffer.get(strByte);
                 String userFollowing = new String(strByte);
-                List<String> listFollowing = new ArrayList<>();
 
-                getUserFromJson(listFollowing, userFollowing);
+                System.out.printf("< %10s%10s%10s\n", "Users", "|", "Tags");
+                System.out.println("< ----------------------------------------");
 
-                System.out.println("< Following:");
-                for (String user : listFollowing)
-                    System.out.println("< " + user);
+                JsonArray jsonArray = JsonParser.parseString(userFollowing).getAsJsonArray();
+                for (JsonElement jsonElement : jsonArray) {
+                    JsonObject jsonEntry = JsonParser.parseString(jsonElement.toString()).getAsJsonObject();
+                    String username = jsonEntry.get("username").getAsString();
+
+                    JsonArray jsonTags = jsonEntry.get("tags").getAsJsonArray();
+                    String []tags = new String[jsonTags.size()];
+                    for (int i = 0; i < tags.length; i++) {
+                        tags[i] = jsonTags.get(i).getAsString();
+                    }
+
+                    System.out.printf("< %10s%10s%22s\n", username, "|", Arrays.toString(tags));
+                }
             }
             if (responseId == 1) System.err.println("< There is no user logged");
         } catch (IOException e) {
