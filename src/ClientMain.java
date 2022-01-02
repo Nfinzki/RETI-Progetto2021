@@ -199,7 +199,7 @@ public class ClientMain {
             if (responseId == 5) System.err.println("< You've already rated this post");
 
         } catch (IOException e) {
-            System.err.println("Error during logout (" + e.getMessage() + ")");
+            System.err.println("Error while rating the post (" + e.getMessage() + ")");
         }
     }
 
@@ -227,7 +227,7 @@ public class ClientMain {
             if (responseId == 3) System.err.println("< User " + userToFollow + " already followed");
 
         } catch (IOException e) {
-            System.err.println("Error during logout (" + e.getMessage() + ")");
+            System.err.println("Error while following user (" + e.getMessage() + ")");
         }
     }
 
@@ -255,7 +255,7 @@ public class ClientMain {
             if (responseId == 3) System.err.println("< User " + userToUnfollow + " already not followed");
 
         } catch (IOException e) {
-            System.err.println("Error during logout (" + e.getMessage() + ")");
+            System.err.println("Error while unfollowing user (" + e.getMessage() + ")");
         }
     }
 
