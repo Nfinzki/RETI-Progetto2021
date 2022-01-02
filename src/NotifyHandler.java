@@ -27,7 +27,9 @@ public class NotifyHandler implements Runnable{
             while (!Thread.currentThread().isInterrupted()) {
                 multicastSocket.receive(packet);
                 String notification = new String(packet.getData(), 0, packet.getLength());
-                System.out.println(notification);
+
+                if (!Thread.currentThread().isInterrupted())
+                    System.out.println(notification);
             }
         } catch (IOException e) {
             e.printStackTrace();
