@@ -34,7 +34,7 @@ public class RevenueCalculator implements Runnable{
         try (MulticastSocket multicastGroup = new MulticastSocket()) {
             InetAddress address = InetAddress.getByName(multicastIP);
 
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 System.out.println("Calculating revenue");
                 for (Post post : posts.values()) {
                     double gain = 0;
