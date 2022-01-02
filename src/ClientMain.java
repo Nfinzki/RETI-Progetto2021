@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -167,6 +168,10 @@ public class ClientMain {
                 }
                 case "exit" : { //TODO Scrivere nella relazione che si è voluto inserire questo comando per terminare il client
                     termination = true;
+                    multicastThread.interrupt(); //TODO Valutare se mettere la System.exit per evitare di aspettare il messaggio dal server
+                    try {
+                        UnicastRemoteObject.unexportObject(followerCallback, true);
+                    } catch (NoSuchObjectException ignored) {}
                     break;
                 }
                 default: System.err.println("Unknown command: " + command);
