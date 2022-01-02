@@ -8,9 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,6 +46,8 @@ public class ServerMain {
     private static final AtomicBoolean stateChanged = new AtomicBoolean(false);
     private static int saveStateTime = 15 * 6000;
 
+    private static int automaticLogoutCheckTime = 25000;
+
     public static void main(String []args) {
         if (args.length == 1) configurationFile = args[0];
         if (args.length > 1) {
@@ -69,15 +69,23 @@ public class ServerMain {
         callbackHandler = new CallbackHandler();
         initializeRegisterService();
 
+        List<Thread> activeThread = new ArrayList<>();
+
         Thread revenueThread = new Thread(new RevenueCalculator(users, posts, calculationTime, authorPercentage, multicastIP, multicastPort, stateChanged));
         revenueThread.start();
+        activeThread.add(revenueThread);
 
         Thread saveStateThread = new Thread(new SaveState(users, posts, usersFile, postsFile, stateChanged, saveStateTime));
         saveStateThread.start();
+        activeThread.add(saveStateThread);
+
+        Thread automaticLogoutThread = new Thread(new AutomaticLogoutHandler(loggedUsers, automaticLogoutCheckTime));
+        automaticLogoutThread.start();
+        activeThread.add(automaticLogoutThread);
 
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
-        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool, revenueThread, saveStateThread);
+        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool, activeThread);
         multiplexChannels(threadPool);
     }
 
