@@ -183,12 +183,7 @@ public class ClientMain {
         String request = command + " " + currentLoggedUser;
         try {
             sendRequest(request);
-
-            buffer.clear();
-            //Reads the response
-            socketChannel.read(buffer);
-            //Sets the buffer ready to be read
-            buffer.flip();
+            readResponse();
             int responseId = buffer.getInt();
 
             if (responseId == 0) System.out.println("< Post rated correctly");
@@ -203,6 +198,14 @@ public class ClientMain {
         }
     }
 
+    private static void readResponse() throws IOException {
+        buffer.clear();
+        //Reads the response
+        socketChannel.read(buffer);
+        //Sets the buffer ready to be read
+        buffer.flip();
+    }
+
     private static void followUser(String command) {
         if (socketChannel == null || currentLoggedUser == null) {
             System.err.println("< There is no user logged in");
@@ -212,12 +215,7 @@ public class ClientMain {
         String request = command + " " + currentLoggedUser;
         try {
             sendRequest(request);
-
-            buffer.clear();
-            //Reads the response
-            socketChannel.read(buffer);
-            //Sets the buffer ready to be read
-            buffer.flip();
+            readResponse();
             int responseId = buffer.getInt();
 
             String userToFollow = command.split(" ")[1];
@@ -240,12 +238,7 @@ public class ClientMain {
         String request = command + " " + currentLoggedUser;
         try {
             sendRequest(request);
-
-            buffer.clear();
-            //Reads the response
-            socketChannel.read(buffer);
-            //Sets the buffer ready to be read
-            buffer.flip();
+            readResponse();
             int responseId = buffer.getInt();
 
             String userToUnfollow = command.split(" ")[1];
@@ -302,12 +295,7 @@ public class ClientMain {
         String request = "logout " + currentLoggedUser;
         try {
             sendRequest(request);
-
-            buffer.clear();
-            //Reads the response
-            socketChannel.read(buffer);
-            //Sets the buffer ready to be read
-            buffer.flip();
+            readResponse();
             int responseId = buffer.getInt();
 
             if (responseId == 0) {
@@ -349,12 +337,7 @@ public class ClientMain {
 
             //Sends request to the server
             sendRequest(command);
-
-            buffer.clear();
-            //Reads the response
-            socketChannel.read(buffer);
-            //Sets the buffer ready to be read
-            buffer.flip();
+            readResponse();
             int responseId = buffer.getInt();
 
             if (responseId == 0) {
@@ -396,10 +379,7 @@ public class ClientMain {
     private static void getFollowers(String username) {
         try {
             sendRequest("getFollowers " + username);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             buffer.getInt();
             int strLen = buffer.getInt();
@@ -430,10 +410,7 @@ public class ClientMain {
 
         try {
             sendRequest(command + " " + currentLoggedUser);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == -1) {
@@ -481,10 +458,7 @@ public class ClientMain {
         String request = command + " " + currentLoggedUser;
         try {
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == 0) System.out.println("< Post created correctly");
@@ -505,10 +479,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == 0) System.out.println("< Post deleted correctly");
@@ -529,10 +500,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == 0) {
@@ -573,10 +541,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == 0) {
@@ -613,10 +578,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == -1) System.err.println("< Invalid command");
@@ -665,10 +627,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == 0) {
@@ -705,10 +664,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == 0) System.out.println("< Post rewinned correctly");
@@ -729,10 +685,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == 0) System.out.println("< Comment added correctly");
@@ -755,10 +708,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == -1) System.err.println("< Invalid command. Use 'wallet' or 'wallet btc'");
@@ -802,10 +752,7 @@ public class ClientMain {
         try {
             String request = command + " " + currentLoggedUser;
             sendRequest(request);
-
-            buffer.clear();
-            socketChannel.read(buffer);
-            buffer.flip();
+            readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == -1) System.err.println("< Invalid command. Use 'wallet' or 'wallet btc'");
