@@ -1,4 +1,7 @@
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -42,16 +45,34 @@ public class ReaderWorker implements Runnable {
     }
 
     public void run() {
+        //Reads the request from client
         String request = readRequest();
         if (request == null) return;
 
+        //Gets the request arguments
         String[] args = request.split(" ");
 
         switch (args[0]) {
-            case "login" -> login(args[1], args[2]);
-            case "logout" -> logout(args[1]);
+            case "login" -> {
+                if (args.length != 3) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                login(args[1], args[2]);
+            }
+
+            case "logout" -> {
+                if (args.length != 2) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                logout(args[1]);
+            }
+
             case "list" -> {
-                if (args.length != 3) {
+                if (args.length != 3) { //Checks the correctness of the request
                     setResponse(-1);
                     break;
                 }
@@ -60,19 +81,62 @@ public class ReaderWorker implements Runnable {
                     listUsers(args[2]);
                     break;
                 }
+
                 if (args[1].equals("following")) {
                     listFollowing(args[2]);
                     break;
                 }
 
-                setResponse(-1);
+                setResponse(-1); //Invalid request
             }
+
             case "post" -> createPost(request);
-            case "delete" -> deletePost(args[2], Integer.parseInt(args[1]));
-            case "follow" -> followUser(args[2], args[1]);
-            case "unfollow" -> unfollowUser(args[2], args[1]);
-            case "rate" -> ratePost(args[3], Integer.parseInt(args[1]), args[2]);
-            case "blog" -> viewBlog(args[1]);
+
+            case "delete" -> {
+                if (args.length != 3) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                deletePost(args[2], Integer.parseInt(args[1]));
+            }
+
+            case "follow" -> {
+                if (args.length != 3) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                followUser(args[2], args[1]);
+            }
+
+            case "unfollow" -> {
+                if (args.length != 3) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                unfollowUser(args[2], args[1]);
+            }
+
+            case "rate" -> {
+                if (args.length != 4) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                ratePost(args[3], Integer.parseInt(args[1]), args[2]);
+            }
+
+            case "blog" -> {
+                if (args.length != 2) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                viewBlog(args[1]);
+            }
+
             case "show" -> {
                 if (args[1].equals("post") && args.length == 4) {
                     showPost(Integer.parseInt(args[2]), args[3]);
@@ -84,14 +148,30 @@ public class ReaderWorker implements Runnable {
                     break;
                 }
 
-                setResponse(-1);
+                setResponse(-1); //Invalid request
             }
-            case "rewin" -> rewinPost(Integer.parseInt(args[1]), args[2]);
+
+            case "rewin" -> {
+                if (args.length != 3) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                rewinPost(Integer.parseInt(args[1]), args[2]);
+            }
+
             case "comment" -> {
                 String comment = request.substring(request.indexOf("\"") + 1, request.lastIndexOf("\""));
                 String username = request.substring(request.lastIndexOf("\"") + 2);
+
+                if (comment.equals("") || username.equals("")) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
                 addComment(Integer.parseInt(args[1]), comment, username);
             }
+
             case "wallet" -> {
                 if (args.length == 2) {
                     getWallet(args[1]);
@@ -103,45 +183,79 @@ public class ReaderWorker implements Runnable {
                     break;
                 }
 
-                setResponse(-1);
+                setResponse(-1); //Invalid request
             }
-            case "getFollowers" -> sendFollowers(args[1]);
+
+            case "getFollowers" -> {
+                if (args.length != 2) { //Checks the correctness of the request
+                    setResponse(-1);
+                    break;
+                }
+
+                sendFollowers(args[1]);
+            }
         }
 
-        readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer)); //TODO Cosa succede poi nel main se c'è stata la client.close() ?
-        selector.wakeup();
+        //TODO Cosa succede poi nel main se c'è stata la client.close() ?
+        readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer)); //Marks the client as ready
+        selector.wakeup(); //Wakes up the selector to re-register the key
     }
 
-    private void setResponse(int code) {
-        byteBuffer.clear();
-        byteBuffer.putInt(code);
-    }
-
-    private void setResponse(int code, String response) {
-        byteBuffer.clear();
-        byteBuffer.putInt(code);
-        byteBuffer.putInt(response.getBytes().length);
-        byteBuffer.put(response.getBytes());
-    }
-
+    /**
+     * Reads a request from the SocketChannel
+     * @return the request string or null otherwise
+     */
     private String readRequest() {
         try {
-            byteBuffer.clear(); //Predispone la scrittura sul buffer
-            int byteRead = client.read(byteBuffer); //Scrive dati sul buffer
-            byteBuffer.flip();
+            byteBuffer.clear(); //Prepares for writing to the buffer
+            int byteRead = client.read(byteBuffer); //Writes to the buffer
+            byteBuffer.flip(); //Prepares the buffer to be read
 
             //Checks if the client sent the termination signal
-            if (byteRead == -1) throw new IOException("CLient disconnected");
+            if (byteRead == -1) throw new IOException("Client disconnected");
 
-            int requestLen = byteBuffer.getInt();
+            int requestLen = byteBuffer.getInt(); //Reads the request length
             byte[] requestBytes = new byte[requestLen];
-            byteBuffer.get(requestBytes);
-            return new String(requestBytes);
+            byteBuffer.get(requestBytes); //Reads the request in bytes
+            return new String(requestBytes); //Creates the request string
         } catch (IOException e) {
             try {client.close();} catch (Exception ignored) {} //TODO Deve inviare comunque la risposta al client?
         }
 
         return null;
+    }
+
+    /**
+     * Sets the response code on the buffer
+     * @param code Response code
+     */
+    private void setResponse(int code) {
+        byteBuffer.clear(); //Prepares the buffer to be written
+        byteBuffer.putInt(code); //Writes the response code
+    }
+
+    /**
+     * Sets the response code on the buffer and the json array as result
+     * @param code Response code
+     * @param response response to send to the client
+     */
+    private void setResponse(int code, JsonArray response) {
+        byteBuffer.clear();
+        byteBuffer.putInt(code);
+        byteBuffer.putInt(response.toString().length());
+        byteBuffer.put(response.toString().getBytes());
+    }
+
+    /**
+     * Sets the response code on the buffer and the json element as result
+     * @param code Response code
+     * @param response response to send to the client
+     */
+    private void setResponse(int code, JsonElement response) {
+        byteBuffer.clear();
+        byteBuffer.putInt(code);
+        byteBuffer.putInt(response.toString().length());
+        byteBuffer.put(response.toString().getBytes());
     }
 
     private void login(String username, String password) {
@@ -154,7 +268,7 @@ public class ReaderWorker implements Runnable {
             if (user != null) {
                 if (user.comparePassword(Hash.bytesToHex(Hash.sha256(username + password)))) {
                     loggedUsers.put(username, client.socket());
-                    String multicastReferences = "{\"multicastIP\": \"" + ServerMain.multicastIP + "\", \"multicastPort\": " + ServerMain.multicastPort + "}";
+                    JsonElement multicastReferences = JsonParser.parseString("{\"multicastIP\": \"" + ServerMain.multicastIP + "\", \"multicastPort\": " + ServerMain.multicastPort + "}");
                     setResponse(0, multicastReferences);
                 } else
                     setResponse(1);
@@ -182,21 +296,18 @@ public class ReaderWorker implements Runnable {
 
         boolean firstEntry = true;
         Gson gson = new Gson();
-        StringBuilder response = new StringBuilder("["); //TODO Probabilmente andrebbero inviati uno alla volta
+        JsonArray jsonResponse = new JsonArray(); //TODO Probabilmente andrebbero inviati uno alla volta
         User user = users.get(username);
         for (User u : users.values()) {
             if (user != u) {
                 String []commonTags = user.getCommonTags(u);
                 if (commonTags.length == 0) continue;
 
-                if (!firstEntry) response.append(", ");
-                response.append("{\"username\": \"" + u.getUsername() + "\", \"tags\": " + gson.toJson(commonTags) + "}");
-                firstEntry = false;
+                jsonResponse.add(JsonParser.parseString("{\"username\": \"" + u.getUsername() + "\", \"tags\": " + gson.toJson(commonTags) + "}"));
             }
         }
-        response.append("]");
 
-        setResponse(0, response.toString());
+        setResponse(0, jsonResponse);
     }
 
     private void followUser(String username, String userToFollow) {
@@ -346,18 +457,13 @@ public class ReaderWorker implements Runnable {
         }
 
         User user = users.get(username);
-        String response = "[";
-        boolean firstEntry = true;
+        JsonArray jsonResponse = new JsonArray();
         Gson gson = new Gson();
         for (String u : user.getFollowing()) {
-            if (!firstEntry) response += ",";
-
-            response += "{\"username\": \"" + u + "\", \"tags\": " + gson.toJson(user.getCommonTags(users.get(u))) + "}";
-            firstEntry = false;
+            jsonResponse.add(JsonParser.parseString("{\"username\": \"" + u + "\", \"tags\": " + gson.toJson(user.getCommonTags(users.get(u))) + "}"));
         }
-        response += "]";
 
-        setResponse(0, response);
+        setResponse(0, jsonResponse);
     }
 
     private void viewBlog(String username) {
@@ -367,21 +473,15 @@ public class ReaderWorker implements Runnable {
         }
 
         User user = users.get(username);
-        boolean firstEntry = true;
-        String response = "[";
-
+        JsonArray jsonResponse = new JsonArray();
         for (int postId : user.getBlog()) {
-            if (!firstEntry) response += ", ";
             Post post = posts.get(postId);
 
             if (post.getAuthor().equals(username))
-                response += post.basicInfoToJson();
-
-            firstEntry = false;
+                jsonResponse.add(JsonParser.parseString(post.basicInfoToJson()));
         }
-        response += "]";
 
-        setResponse(0, response);
+        setResponse(0, jsonResponse);
     }
 
     private void showPost(int idPost, String username) {
@@ -396,7 +496,7 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
-        setResponse(0, post.toJson());
+        setResponse(0, JsonParser.parseString(post.toJson()));
     }
 
     private void showFeed(String username) {
@@ -406,20 +506,16 @@ public class ReaderWorker implements Runnable {
         }
 
         User user = users.get(username);
-        boolean firstEntry = true;
-        String response = "[";
+        JsonArray jsonResponse = new JsonArray();
         for (String usernameFollowed : user.getFollowed()) {
             User userFollowed = users.get(usernameFollowed);
             for (int postId : userFollowed.getBlog()) {
-                if (!firstEntry) response += ", ";
                 Post post = posts.get(postId);
-                response += post.basicInfoToJson();
-                firstEntry = false;
+                jsonResponse.add(JsonParser.parseString(post.basicInfoToJson()));
             }
         }
-        response += "]";
 
-        setResponse(0, response);
+        setResponse(0, jsonResponse);
     }
 
     private void rewinPost(int idPost, String username) {
@@ -482,7 +578,7 @@ public class ReaderWorker implements Runnable {
         }
 
         User user = users.get(username);
-        setResponse(0, user.getWalletAsJson());
+        setResponse(0, JsonParser.parseString(user.getWalletAsJson()));
     }
 
     private void getWalletBTC(String username) {
@@ -494,6 +590,7 @@ public class ReaderWorker implements Runnable {
         User user = users.get(username);
         String response = "{\"wincoinBTC\":" + user.getWallet().wincoinToBTC() + ", \"transactions\": [";
         boolean firstEntry = true;
+
         for (Transaction t : user.getWallet().getTransactions()) {
             if (!firstEntry) response += ",";
             response += t.toJson();
@@ -502,12 +599,12 @@ public class ReaderWorker implements Runnable {
         }
         response += "]}";
 
-        setResponse(0, response);
+        setResponse(0, JsonParser.parseString(response));
     }
 
     private void sendFollowers(String username) {
         User user = users.get(username);
 
-        setResponse(0, user.getFollowersAsJson());
+        setResponse(0, JsonParser.parseString(user.getFollowersAsJson()));
     }
 }
