@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -14,23 +15,22 @@ public class ShutdownHandler {
     private final Map<String, User> users;
     private final Map<Integer, Post> posts;
     private final ThreadPoolExecutor threadPool;
-    private final Thread revenueThread;
-    private final Thread saveStateThread;
+    private final List<Thread> activeThreads;
 
-    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, Thread revenueThread, Thread saveStateThread) {
+    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, List<Thread> activeThreads) {
         this.usersFile = usersFile;
         this.postsFile = postsFile;
         this.users = users;
         this.posts = posts;
         this.threadPool = threadPool;
-        this.revenueThread = revenueThread;
-        this.saveStateThread = saveStateThread;
+        this.activeThreads = activeThreads;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 threadPool.shutdown();
-                revenueThread.interrupt();
-                saveStateThread.interrupt();
+
+                for (Thread thread : activeThreads)
+                    thread.interrupt();
 
                 //TODO Conviene fare un salvataggio di sicurezza? Oppure mi fido del booleano?
                 //Saves the server state
