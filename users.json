@@ -98,8 +98,14 @@
       "tecnologia",
       "sport"
     ],
-    "follower": [],
-    "followed": [],
+    "follower": [
+      "utente",
+      "mario"
+    ],
+    "followed": [
+      "utente",
+      "Stefano"
+    ],
     "blog": [
       0,
       1,
