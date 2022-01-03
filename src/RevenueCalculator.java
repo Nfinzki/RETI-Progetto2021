@@ -14,7 +14,6 @@ public class RevenueCalculator implements Runnable{
     private final int authorPercentage;
     private final String multicastIP;
     private final int multicastPort;
-    private final Map<Integer, Integer> postIteration;
     private final AtomicBoolean stateChanged;
 
     public RevenueCalculator(Map<String, User> users, Map<Integer, Post> posts, int calculationTime, int authorPercentage, String multicastIP, int multicastPort, AtomicBoolean stateChanged) {
@@ -26,8 +25,6 @@ public class RevenueCalculator implements Runnable{
         this.multicastIP = multicastIP;
         this.multicastPort = multicastPort;
         this.stateChanged = stateChanged;
-
-        this.postIteration = new HashMap<>();
     }
 
     public void run() {
@@ -40,14 +37,14 @@ public class RevenueCalculator implements Runnable{
                     double gain = 0;
                     Set<String> commenterUsernames = post.getRecentCommenters();
                     synchronized (post) {
-                        Integer iterations = postIteration.get(post.getIdPost());
-                        if (iterations == null) iterations = 1;
+                        int iterations = post.getRevenueIteration();
 
                         int upvotes = post.getRecentUpvotesAndReset();
                         int downvotes = post.getRecentDownvotesAndReset();
                         gain = (Math.log(Math.max(upvotes - downvotes, 0) + 1) + Math.log(getSecondLogArg(post, commenterUsernames) + 1)) / iterations;
 
-                        postIteration.put(post.getIdPost(), iterations + 1);
+                        post.incrementRevenueIteration();
+                        stateChanged.set(true);
                     }
 
                     double authorGain = (gain * authorPercentage) / 100;

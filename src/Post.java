@@ -19,6 +19,7 @@ public class Post implements BufferedSerialization {
     private final Set<String> downvotes;
     private final Map<String, Integer> commentsStats;
     private final Set<String> rewinner;
+    private int revenueIteration;
 
     private transient final Set<String> recentUpvotes;
     private transient final Set<String> recentDownvotes;
@@ -34,13 +35,14 @@ public class Post implements BufferedSerialization {
         downvotes = ConcurrentHashMap.newKeySet();
         commentsStats = new ConcurrentHashMap<>();
         rewinner = ConcurrentHashMap.newKeySet();
+        revenueIteration = 1;
 
         recentUpvotes = ConcurrentHashMap.newKeySet();
         recentDownvotes = ConcurrentHashMap.newKeySet();
         recentCommenters = ConcurrentHashMap.newKeySet();
     }
 
-    public Post(int idPost, String author, String postTitle, String postContent, Set<Comment> comments, Set<String> upvotes, Set<String> downvotes, Map<String, Integer> commentsStats, Set<String> rewinner) {
+    public Post(int idPost, String author, String postTitle, String postContent, Set<Comment> comments, Set<String> upvotes, Set<String> downvotes, Map<String, Integer> commentsStats, Set<String> rewinner, int revenueIteration) {
         this.idPost = idPost;
         this.author = author;
         this.postTitle = postTitle;
@@ -50,6 +52,7 @@ public class Post implements BufferedSerialization {
         this.downvotes = downvotes;
         this.commentsStats = commentsStats;
         this.rewinner = rewinner;
+        this.revenueIteration = revenueIteration;
 
         recentUpvotes = ConcurrentHashMap.newKeySet();
         recentDownvotes = ConcurrentHashMap.newKeySet();
@@ -124,6 +127,14 @@ public class Post implements BufferedSerialization {
         return commentsStats.get(username);
     }
 
+    public int getRevenueIteration() {
+        return revenueIteration;
+    }
+
+    public void incrementRevenueIteration() {
+        revenueIteration++;
+    }
+
     public String toJson() {
         String serializedPost = "{\"postTitle\":\"" + postTitle + "\", \"postContent\":\"" + postContent + "\", \"upvotes\":" + upvotes.size() + ", \"downvotes\":" + downvotes.size() + ", \"comments\": [";
         boolean firstEntry = true;
@@ -157,6 +168,7 @@ public class Post implements BufferedSerialization {
         stringCollectionToJson(writer, "downvotes", downvotes);
         mapToJson(writer, "commentsStats", commentsStats);
         stringCollectionToJson(writer, "rewinner", rewinner);
+        writer.name("revenueIteration").value(revenueIteration);
         writer.endObject();
     }
 

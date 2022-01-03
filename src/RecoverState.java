@@ -48,6 +48,7 @@ public class RecoverState {
                 //Reads users that rewinned this post
                 Set<String> rewinner = getStringSetFromJson(jsonReader);
 
+                int revenueIteration = getIntegerFromJson(jsonReader);
                 //End post
                 jsonReader.endObject();
 
@@ -63,7 +64,8 @@ public class RecoverState {
                                 upvotes,
                                 downvotes,
                                 commentStats,
-                                rewinner
+                                rewinner,
+                                revenueIteration
                         )
                 );
             }
