@@ -18,7 +18,8 @@
     "commentsStats": {
       "utente": 1
     },
-    "rewinner": []
+    "rewinner": [],
+    "revenueIteration": 3
   },
   {
     "idPost": 1,
@@ -39,7 +40,8 @@
     "commentsStats": {
       "utente": 1
     },
-    "rewinner": []
+    "rewinner": [],
+    "revenueIteration": 3
   },
   {
     "idPost": 2,
@@ -52,6 +54,7 @@
       "utente"
     ],
     "commentsStats": {},
-    "rewinner": []
+    "rewinner": [],
+    "revenueIteration": 3
   }
 ]
