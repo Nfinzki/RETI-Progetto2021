@@ -3,11 +3,9 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-public class NotifyHandler implements Runnable{
+public class NotifyHandler implements Runnable {
     private final String multicastIP;
     private final int multicastPort;
-
-    private final int bufferSize = 512;
 
     public NotifyHandler(String multicastIP, int multicastPort) {
         this.multicastIP = multicastIP;
@@ -21,6 +19,7 @@ public class NotifyHandler implements Runnable{
 
             multicastSocket.joinGroup(address);
 
+            int bufferSize = 512;
             byte []messaggeBuffer = new byte[bufferSize];
             DatagramPacket packet = new DatagramPacket(messaggeBuffer, messaggeBuffer.length);
 
@@ -29,7 +28,7 @@ public class NotifyHandler implements Runnable{
                 String notification = new String(packet.getData(), 0, packet.getLength());
 
                 if (!Thread.currentThread().isInterrupted())
-                    System.out.println(notification);
+                    System.out.print("\n< " + notification + "\n> ");
             }
         } catch (IOException e) {
             e.printStackTrace();
