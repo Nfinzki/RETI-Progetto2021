@@ -213,7 +213,6 @@ public class ReaderWorker implements Runnable {
             default -> setResponse(-2);
         }
 
-        //TODO Cosa succede poi nel main se c'è stata la client.close() ?
         readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer)); //Marks the client as ready
         selector.wakeup(); //Wakes up the selector to re-register the key
     }
@@ -236,7 +235,7 @@ public class ReaderWorker implements Runnable {
             byteBuffer.get(requestBytes); //Reads the request in bytes
             return new String(requestBytes); //Creates the request string
         } catch (IOException e) {
-            try {client.close();} catch (Exception ignored) {} //TODO Deve inviare comunque la risposta al client?
+            try {client.close();} catch (Exception ignored) {}
         }
 
         return null;
@@ -259,7 +258,7 @@ public class ReaderWorker implements Runnable {
     private void setResponse(int code, JsonArray response) {
         byteBuffer.clear();
         byteBuffer.putInt(code);
-        byteBuffer.putInt(response.toString().length());
+        byteBuffer.putInt(response.toString().getBytes().length);
         byteBuffer.put(response.toString().getBytes());
     }
 
@@ -271,7 +270,7 @@ public class ReaderWorker implements Runnable {
     private void setResponse(int code, JsonElement response) {
         byteBuffer.clear();
         byteBuffer.putInt(code);
-        byteBuffer.putInt(response.toString().length());
+        byteBuffer.putInt(response.toString().getBytes().length);
         byteBuffer.put(response.toString().getBytes());
     }
 
