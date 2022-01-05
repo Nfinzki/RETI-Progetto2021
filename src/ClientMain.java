@@ -12,7 +12,7 @@ public class ClientMain {
     private static int registryPort = 11111; //TODO Mettere una porta di default più significativa
     private static String registryHost = "localhost";
     private static String registerServiceName = "RMI-REGISTER";
-    private static String callbackServiceName = "RMI-FOLLOWER-CALLBACK"; //TODO Aggiungere il parsing del file di config
+    private static String callbackServiceName = "RMI-FOLLOWER-CALLBACK";
     private static String serverIP = "localhost";
     private static int tcpPort = 2222;
     private static int bufferSize = 16 * 1024;
@@ -41,7 +41,7 @@ public class ClientMain {
 
             String []arguments = command.split(" ");
             switch (arguments[0]) {
-                case "register" : {
+                case "register" -> {
                     if (arguments.length > 8) {
                         System.err.println("< Usage: register username password tags (max 5 tag)");
                         return;
@@ -50,26 +50,23 @@ public class ClientMain {
                     List<String> tags = new ArrayList<>(Arrays.asList(arguments).subList(3, arguments.length));
                     assert winsome != null;
                     winsome.register(arguments[1], arguments[2], tags);
-                    break;
                 }
 
-                case "login" : {
+                case "login" -> {
                     if (command.split(" ").length != 3) {
                         System.err.println("< Usage: login username password");
                     }
 
                     assert winsome != null;
                     winsome.login(arguments[1], arguments[2]);
-                    break;
                 }
 
-                case "logout" : {
+                case "logout" -> {
                     assert winsome != null;
                     winsome.logout();
-                    break;
                 }
 
-                case "list" : {
+                case "list" -> {
                     if (arguments.length != 2 || (!arguments[1].equals("users") && !arguments[1].equals("following") && !arguments[1].equals("followers"))) {
                         System.err.println("< Invalid command '" + command + "'. Use 'list users', 'list followers' or 'list following'");
                         break;
@@ -85,10 +82,9 @@ public class ClientMain {
                         assert winsome != null;
                         winsome.listFollowing();
                     }
-                    break;
                 }
 
-                case "follow" : {
+                case "follow" -> {
                     if (arguments.length != 2) {
                         System.err.println("< Usage: follow <idUser>");
                         break;
@@ -96,10 +92,9 @@ public class ClientMain {
 
                     assert winsome != null;
                     winsome.followUser(arguments[1]);
-                    break;
                 }
 
-                case "unfollow" : {
+                case "unfollow" -> {
                     if (arguments.length != 2) {
                         System.err.println("< Usage: unfollow <idUser>");
                         break;
@@ -107,10 +102,9 @@ public class ClientMain {
 
                     assert winsome != null;
                     winsome.unfollowUser(arguments[1]);
-                    break;
                 }
 
-                case "blog" : {
+                case "blog" -> {
                     if (arguments.length != 1) {
                         System.err.println("< Usage: blog");
                         break;
@@ -118,10 +112,9 @@ public class ClientMain {
 
                     assert winsome != null;
                     winsome.viewBlog();
-                    break;
                 }
 
-                case "post" : {
+                case "post" -> {
                     //Gets the indexes of the first string between quotes
                     int openingQuoteIndex = command.indexOf("\"");
                     int closingQuoteIndex = command.indexOf("\"", openingQuoteIndex + 1);
@@ -141,10 +134,9 @@ public class ClientMain {
 
                     assert winsome != null;
                     winsome.createPost(title, content);
-                    break;
                 }
 
-                case "show" : {
+                case "show" -> {
                     if (arguments.length < 2 || (!arguments[1].equals("feed") && !arguments[1].equals("post"))) {
                         System.err.println("Invalid command '" + command + "'. Use 'show feed' or 'show post'");
                         break;
@@ -162,10 +154,9 @@ public class ClientMain {
                         assert winsome != null;
                         winsome.showPost(arguments[2]);
                     }
-                    break;
                 }
 
-                case "delete" : {
+                case "delete" -> {
                     if (arguments.length != 2) {
                         System.err.println("< Usage: delete <idPost>");
                         break;
@@ -173,10 +164,9 @@ public class ClientMain {
 
                     assert winsome != null;
                     winsome.deletePost(arguments[1]);
-                    break;
                 }
 
-                case "rewin" : {
+                case "rewin" -> {
                     if (arguments.length != 2) {
                         System.err.println("< Usage: rewin <idPost>");
                         break;
@@ -184,10 +174,9 @@ public class ClientMain {
 
                     assert winsome != null;
                     winsome.rewinPost(arguments[1]);
-                    break;
                 }
 
-                case "rate" : {
+                case "rate" -> {
                     if (arguments.length != 3) {
                         System.err.println("< Usage: rate <idPost> <vote>");
                         break;
@@ -195,10 +184,9 @@ public class ClientMain {
 
                     assert winsome != null;
                     winsome.ratePost(arguments[1], arguments[2]);
-                    break;
                 }
 
-                case "comment" : {
+                case "comment" -> {
                     String idPost = command.split(" ")[1];
                     String comment = command.substring(command.indexOf("\"") + 1, command.lastIndexOf("\""));
 
@@ -209,33 +197,30 @@ public class ClientMain {
 
                     assert winsome != null;
                     winsome.addComment(idPost, comment);
-                    break;
                 }
 
-                case "wallet" : {
+                case "wallet" -> {
                     if (arguments.length > 2 || (arguments.length == 2 && !arguments[1].equals("btc"))) {
                         System.err.println("Invallid command '" + command + "'. Use 'wallet' or 'wallet btc'");
                         break;
                     }
 
+                    assert winsome != null;
                     if (arguments.length == 2) { //wallet btc
-                        assert winsome != null;
                         winsome.getWalletInBitcoin();
                     } else { //wallet
-                        assert winsome != null;
                         winsome.getWallet();
                     }
-                    break;
                 }
-                case "exit" : { //TODO Scrivere nella relazione che si è voluto inserire questo comando per terminare il client
+
+                case "exit" -> { //TODO Scrivere nella relazione che si è voluto inserire questo comando per terminare il client
                     termination = true;
 
                     assert winsome != null;
                     winsome.close();
-                    break;
                 }
 
-                default: System.err.println("Unknown command: " + command);
+                default -> System.err.println("Unknown command: " + command);
             }
         }
     }
@@ -261,7 +246,13 @@ public class ClientMain {
                     case "BUFFER-SIZE" -> bufferSize = Integer.parseInt(line.split("=")[1]);
 
                     case "RMI-CALLBACK" -> callbackServiceName = line.split("=")[1];
-                    //TODO Aggiungere ulteriori case
+
+                    default -> {
+                        if (!line.equals("") && !line.startsWith("#")) {
+                            System.err.println("Invalid option: " + line);
+                            System.exit(1);
+                        }
+                    }
                 }
             }
 

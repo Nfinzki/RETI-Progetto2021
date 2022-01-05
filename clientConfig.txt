@@ -7,6 +7,14 @@ REGISTRY-HOST=localhost
 # Service name for RMI
 RMI-REGISTER=REGISTER-SERVICE
 
+# Server IP address
 SERVER-IP=localhost
 
+# Server port
 TCP-PORT=6666
+
+# Size of the buffer
+BUFFER-SIZE=543
+
+# Callback service name
+RMI-CALLBACK=RMI-FOLLOWER-CALLBACK
