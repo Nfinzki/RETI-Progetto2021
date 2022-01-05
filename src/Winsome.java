@@ -656,6 +656,10 @@ public class Winsome {
 
     //Registers a new user to WINSOME
     public void register(String username, String password, List<String> tags) {
+        if (socketChannel != null || currentLoggedUser != null) {
+            System.err.println("< Please logout before registering another user");
+            return;
+        }
 
         try {
             int result;
