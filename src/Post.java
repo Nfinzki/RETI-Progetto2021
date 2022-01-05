@@ -69,7 +69,7 @@ public class Post implements BufferedSerialization {
         return author;
     }
 
-    public boolean addUpvote(String user) {
+    public synchronized boolean addUpvote(String user) {
         if (upvotes.add(user)) {
             recentUpvotes.add(user);
             return true;
@@ -77,7 +77,7 @@ public class Post implements BufferedSerialization {
             return false;
     }
 
-    public boolean addDownvote(String user) {
+    public synchronized boolean addDownvote(String user) {
         if (downvotes.add(user)) {
             recentDownvotes.add(user);
             return true;
@@ -85,7 +85,7 @@ public class Post implements BufferedSerialization {
             return false;
     }
 
-    public void addComment(Comment comment) {
+    public synchronized void addComment(Comment comment) {
         comments.add(comment);
         recentCommenters.add(comment.getAuthor());
 
@@ -104,20 +104,20 @@ public class Post implements BufferedSerialization {
         return downvotes.contains(user);
     }
 
-    public int getRecentUpvotesAndReset() {
+    public synchronized int getRecentUpvotesAndReset() {
         int upvotes = recentUpvotes.size();
         recentUpvotes.clear();
         return upvotes;
     }
 
-    public int getRecentDownvotesAndReset() {
+    public synchronized int getRecentDownvotesAndReset() {
         int downvotes = recentDownvotes.size();
         recentDownvotes.clear();
         return downvotes;
     }
 
-    public Set<String> getRecentCommenters() {
-        Set<String> copy = new HashSet<String>(recentCommenters);
+    public synchronized Set<String> getRecentCommenters() {
+        Set<String> copy = new HashSet<>(recentCommenters);
         recentCommenters.clear();
 
         return copy;
@@ -127,15 +127,15 @@ public class Post implements BufferedSerialization {
         return commentsStats.get(username);
     }
 
-    public int getRevenueIteration() {
+    public synchronized int getRevenueIteration() {
         return revenueIteration;
     }
 
-    public void incrementRevenueIteration() {
+    public synchronized void incrementRevenueIteration() {
         revenueIteration++;
     }
 
-    public String toJson() {
+    public synchronized String toJson() {
         String serializedPost = "{\"postTitle\":\"" + postTitle + "\", \"postContent\":\"" + postContent + "\", \"upvotes\":" + upvotes.size() + ", \"downvotes\":" + downvotes.size() + ", \"comments\": [";
         boolean firstEntry = true;
         for (Comment comment : comments) {
@@ -149,15 +149,15 @@ public class Post implements BufferedSerialization {
         return serializedPost;
     }
 
-    public Set<String> getRewinner() {
-        return rewinner;
+    public synchronized Set<String> getRewinner() {
+        return new HashSet<>(rewinner);
     }
 
     public String basicInfoToJson() {
         return "{\"idPost\": " + idPost + ", \"author\": \"" + author + "\", \"postTitle\": \"" + postTitle + "\" }";
     }
 
-    public void toJsonFile(JsonWriter writer) throws IOException {
+    public synchronized void toJsonFile(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("idPost").value(idPost);
         writer.name("author").value(author);
@@ -202,9 +202,5 @@ public class Post implements BufferedSerialization {
 
         writer.endObject();
         writer.flush();
-    }
-
-    public String toString() {
-        return idPost + " " + postTitle + " " + postContent + " " + comments + " " + upvotes + " " + downvotes;
     }
 }

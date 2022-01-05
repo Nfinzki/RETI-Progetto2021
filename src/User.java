@@ -49,8 +49,8 @@ public class User implements BufferedSerialization{
         return tag;
     }
 
-    public Set<String> getFollowed() {
-        return followed;
+    public synchronized Set<String> getFollowed() {
+        return new HashSet<>(followed);
     }
 
     public String[] getCommonTags(User u) {
@@ -96,29 +96,29 @@ public class User implements BufferedSerialization{
         return followed.contains(user);
     }
 
-    public String getFollowersAsJson() {
+    public synchronized String getFollowersAsJson() {
         Gson gson = new Gson();
         return gson.toJson(follower);
     }
 
-    public Set<String> getFollowing() {
-        return followed;
+    public synchronized Set<String> getFollowing() {
+        return new HashSet<>(followed);
     }
 
-    public Set<Integer> getBlog() {
-        return blog;
+    public synchronized Set<Integer> getBlog() {
+        return new HashSet<>(blog);
     }
 
     public Wallet getWallet() {
         return wallet;
-    }
+    } //TODO Sincronizzare questo
 
-    public String getWalletAsJson() {
+    public synchronized String getWalletAsJson() {
         Gson gson = new Gson();
         return gson.toJson(wallet);
     }
 
-    public void toJsonFile(JsonWriter writer) throws IOException{
+    public synchronized void toJsonFile(JsonWriter writer) throws IOException{
         writer.beginObject();
         writer.name("username").value(username);
         writer.name("password").value(password);
@@ -142,7 +142,7 @@ public class User implements BufferedSerialization{
         writer.flush();
     }
 
-    private void integerCollectionToJson(JsonWriter writer, String name, Collection<Integer> collection) throws IOException{
+    private void integerCollectionToJson(JsonWriter writer, String name, Collection<Integer> collection) throws IOException {
         writer.name(name);
         writer.beginArray();
         for (int integer : collection) {
@@ -152,7 +152,7 @@ public class User implements BufferedSerialization{
         writer.flush();
     }
 
-    private void stringCollectionToJson(JsonWriter writer, String name, Collection<String> collection) throws IOException{
+    private void stringCollectionToJson(JsonWriter writer, String name, Collection<String> collection) throws IOException {
         writer.name(name);
         writer.beginArray();
         for (String s : collection) {
@@ -160,9 +160,5 @@ public class User implements BufferedSerialization{
         }
         writer.endArray();
         writer.flush();
-    }
-
-    public String toString() {
-        return username + " " + password + " " + Arrays.toString(tag) + " " + follower + " " + followed + " " + blog + " " + wallet;
     }
 }
