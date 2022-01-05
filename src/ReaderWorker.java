@@ -11,6 +11,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -90,7 +91,15 @@ public class ReaderWorker implements Runnable {
                 setResponse(-1); //Invalid request
             }
 
-            case "post" -> createPost(request);
+            case "post" -> {
+                String []postArgs = request.split("/");
+                if (postArgs.length != 4) {
+                    setResponse(-1);
+                    break;
+                }
+
+                createPost(postArgs[3], postArgs[1], postArgs[2]);
+            }
 
             case "delete" -> {
                 if (args.length != 3) { //Checks the correctness of the request
@@ -161,15 +170,21 @@ public class ReaderWorker implements Runnable {
             }
 
             case "comment" -> {
-                String comment = request.substring(request.indexOf("\"") + 1, request.lastIndexOf("\""));
-                String username = request.substring(request.lastIndexOf("\"") + 2);
+                String []commentArgs = request.split("/");
+                if (commentArgs.length != 4) {
+                    setResponse(-1);
+                    break;
+                }
+
+                String comment = commentArgs[2];
+                String username = commentArgs[3];
 
                 if (comment.equals("") || username.equals("")) { //Checks the correctness of the request
                     setResponse(-1);
                     break;
                 }
 
-                addComment(Integer.parseInt(args[1]), comment, username);
+                addComment(Integer.parseInt(commentArgs[1]), comment, username);
             }
 
             case "wallet" -> {
@@ -194,6 +209,8 @@ public class ReaderWorker implements Runnable {
 
                 sendFollowers(args[1]);
             }
+
+            default -> setResponse(-2);
         }
 
         //TODO Cosa succede poi nel main se c'è stata la client.close() ?
@@ -451,24 +468,11 @@ public class ReaderWorker implements Runnable {
 
     /**
      * Creates a new post
-     * @param request request containing all the information to create the post (username, post title, post content)
+     * @param username the username of the user who made the request
+     * @param title title of the new post
+     * @param content content of the new post
      */
-    private void createPost(String request) {
-        //Gets the username from the request
-        String username = request.substring(request.lastIndexOf(" ") + 1);
-
-        //Gets the indexes of the first string between quotes
-        int openingQuoteIndex = request.indexOf("\"");
-        int closingQuoteIndex = request.indexOf("\"", openingQuoteIndex + 1);
-        //Gets the post title
-        String title = request.substring(openingQuoteIndex + 1, closingQuoteIndex);
-
-        //Gets the indexes of the second string between quotes
-        openingQuoteIndex = request.indexOf("\"", closingQuoteIndex + 1);
-        closingQuoteIndex = request.indexOf("\"", openingQuoteIndex + 1);
-        //Gets the post content
-        String content = request.substring(openingQuoteIndex + 1, closingQuoteIndex);
-
+    private void createPost(String username, String title, String content) {
         if (!loggedUsers.containsKey(username)) { //Checks if the user is logged in
             setResponse(1);
             return;
