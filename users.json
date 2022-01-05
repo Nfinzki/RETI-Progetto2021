@@ -17,11 +17,15 @@
       1
     ],
     "wallet": {
-      "wincoin": 0.010882494111822563,
+      "wincoin": 0.015420725698880483,
       "transactions": [
         {
           "action": "+0.010882494111822563 wincoin",
           "timestamp": "Jan 4, 2022, 9:30:03 PM"
+        },
+        {
+          "action": "+0.00453823158705792 wincoin",
+          "timestamp": "Jan 5, 2022, 11:19:19 PM"
         }
       ]
     }
@@ -54,7 +58,9 @@
       "mamma",
       "film"
     ],
-    "follower": [],
+    "follower": [
+      "nfinzki"
+    ],
     "followed": [],
     "blog": [],
     "wallet": {
@@ -109,6 +115,7 @@
     ],
     "followed": [
       "utente",
+      "luca",
       "Stefano"
     ],
     "blog": [
@@ -116,11 +123,15 @@
       1
     ],
     "wallet": {
-      "wincoin": 0.010882494111822563,
+      "wincoin": 0.017689841492409444,
       "transactions": [
         {
           "action": "+0.010882494111822563 wincoin",
           "timestamp": "Jan 4, 2022, 9:30:03 PM"
+        },
+        {
+          "action": "+0.00680734738058688 wincoin",
+          "timestamp": "Jan 5, 2022, 11:19:19 PM"
         }
       ]
     }

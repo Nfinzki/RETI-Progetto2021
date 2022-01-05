@@ -19,7 +19,7 @@
       "utente": 1
     },
     "rewinner": [],
-    "revenueIteration": 88
+    "revenueIteration": 97
   },
   {
     "idPost": 1,
@@ -31,6 +31,11 @@
         "idComment": 0,
         "author": "utente",
         "content": "Sei senza speranza"
+      },
+      {
+        "idComment": 1,
+        "author": "utente",
+        "content": "Non capisco proprio"
       }
     ],
     "upvotes": [],
@@ -38,9 +43,9 @@
       "utente"
     ],
     "commentsStats": {
-      "utente": 1
+      "utente": 2
     },
     "rewinner": [],
-    "revenueIteration": 88
+    "revenueIteration": 97
   }
 ]
