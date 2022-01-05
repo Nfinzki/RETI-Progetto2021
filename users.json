@@ -17,8 +17,13 @@
       1
     ],
     "wallet": {
-      "wincoin": 0.0,
-      "transactions": []
+      "wincoin": 0.010882494111822563,
+      "transactions": [
+        {
+          "action": "+0.010882494111822563 wincoin",
+          "timestamp": "Jan 4, 2022, 9:30:03 PM"
+        }
+      ]
     }
   },
   {
@@ -112,8 +117,13 @@
       2
     ],
     "wallet": {
-      "wincoin": 0.0,
-      "transactions": []
+      "wincoin": 0.010882494111822563,
+      "transactions": [
+        {
+          "action": "+0.010882494111822563 wincoin",
+          "timestamp": "Jan 4, 2022, 9:30:03 PM"
+        }
+      ]
     }
   }
 ]
