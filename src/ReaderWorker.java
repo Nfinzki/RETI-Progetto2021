@@ -281,17 +281,19 @@ public class ReaderWorker implements Runnable {
      */
     private void login(String username, String password) {
         try {
-            if (loggedUsers.containsKey(username)) { //Checks if the user is already logged in
-                setResponse(2);
-                return;
-            }
-
             //Gets the user with the specified username
             User user = users.get(username);
 
             if (user != null) {
                 if (user.comparePassword(Hash.bytesToHex(Hash.sha256(username + password)))) { //The password is correct
-                    loggedUsers.put(username, client.socket()); //Saves that the user is logged in
+                    synchronized (loggedUsers) {
+                        if (loggedUsers.containsKey(username)) { //Checks if the user is already logged in
+                            setResponse(2);
+                            return;
+                        }
+
+                        loggedUsers.put(username, client.socket()); //Saves that the user is logged in
+                    }
 
                     //Sets the references for the multicast group to send to the client
                     JsonElement multicastReferences = JsonParser.parseString("{\"multicastIP\": \"" + ServerMain.multicastIP + "\", \"multicastPort\": " + ServerMain.multicastPort + "}");

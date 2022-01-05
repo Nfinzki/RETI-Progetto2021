@@ -13,12 +13,12 @@ public class Transaction {
         this.timestamp = timestamp;
     }
 
-    public String toJson() {
+    public synchronized String toJson() {
         Gson gson = new Gson();
         return gson.toJson(this);
     }
 
-    public void toJsonFile(JsonWriter writer) throws IOException {
+    public synchronized void toJsonFile(JsonWriter writer) throws IOException {
         Gson gson = new Gson();
 
         writer.beginObject();

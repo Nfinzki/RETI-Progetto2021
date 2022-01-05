@@ -36,16 +36,15 @@ public class RevenueCalculator implements Runnable{
                 for (Post post : posts.values()) {
                     double gain = 0;
                     Set<String> commenterUsernames = post.getRecentCommenters();
-                    synchronized (post) {
-                        int iterations = post.getRevenueIteration();
 
-                        int upvotes = post.getRecentUpvotesAndReset();
-                        int downvotes = post.getRecentDownvotesAndReset();
-                        gain = (Math.log(Math.max(upvotes - downvotes, 0) + 1) + Math.log(getSecondLogArg(post, commenterUsernames) + 1)) / iterations;
+                    int iterations = post.getRevenueIteration();
 
-                        post.incrementRevenueIteration();
-                        stateChanged.set(true);
-                    }
+                    int upvotes = post.getRecentUpvotesAndReset();
+                    int downvotes = post.getRecentDownvotesAndReset();
+                    gain = (Math.log(Math.max(upvotes - downvotes, 0) + 1) + Math.log(getSecondLogArg(post, commenterUsernames) + 1)) / iterations;
+
+                    post.incrementRevenueIteration();
+                    stateChanged.set(true);
 
                     double authorGain = (gain * authorPercentage) / 100;
                     double commentersGain = (gain - authorGain);
@@ -54,10 +53,10 @@ public class RevenueCalculator implements Runnable{
                     if (authorGain == 0.0 && commentersGain == 0.0) continue;
 
                     users.get(post.getAuthor()).getWallet().addWincoin(authorGain);
-                    System.out.println("Author " + post.getAuthor() + " got " + authorGain);
+                    System.out.println("Author " + post.getAuthor() + " got " + authorGain); //TODO Rimuovere
                     for (String user : commenterUsernames) {
                         users.get(user).getWallet().addWincoin(singleCommenterGain);
-                        System.out.println("Commenter " + user + " got " + singleCommenterGain);
+                        System.out.println("Commenter " + user + " got " + singleCommenterGain); //TODO Rimuovere
                     }
                     stateChanged.set(true);
                 }

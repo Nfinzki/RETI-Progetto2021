@@ -16,15 +16,15 @@ public class Wallet {
         transactions = new ArrayList<>();
     }
 
-    public double getWincoin() {
+    public synchronized double getWincoin() {
         return wincoin;
     }
 
-    public List<Transaction> getTransactions() {
-        return transactions;
+    public synchronized List<Transaction> getTransactions() {
+        return new ArrayList<>(transactions);
     }
 
-    public void addWincoin(double wincoin) {
+    public synchronized void addWincoin(double wincoin) {
         this.wincoin += wincoin;
         transactions.add(
                 new Transaction(
@@ -42,7 +42,9 @@ public class Wallet {
             if (line == null) throw new IOException("No content received from random.org");
 
             double conversionRate = Double.parseDouble(line);
-            return wincoin * conversionRate;
+            synchronized (this) {
+                return wincoin * conversionRate;
+            }
         } catch (MalformedURLException e) {
             System.err.println("Error with the URL: (" + e.getMessage() + ")");
             return -1;
@@ -52,7 +54,7 @@ public class Wallet {
         }
     }
 
-    public void toJsonFile(JsonWriter writer) throws IOException {
+    public synchronized void toJsonFile(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("wincoin").value(wincoin);
 

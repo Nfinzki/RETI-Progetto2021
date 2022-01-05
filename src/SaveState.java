@@ -28,8 +28,12 @@ public class SaveState implements Runnable{
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 if (stateChanged.get()) {
-                    serverStateToJson(users, usersFile);
-                    serverStateToJson(posts, postsFile);
+                    synchronized (posts) {
+                        serverStateToJson(posts, postsFile);
+                    }
+                    synchronized (users) {
+                        serverStateToJson(users, usersFile);
+                    }
                     stateChanged.set(false);
                 }
                 Thread.sleep(iterationTime);

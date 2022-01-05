@@ -111,7 +111,7 @@ public class User implements BufferedSerialization{
 
     public Wallet getWallet() {
         return wallet;
-    } //TODO Sincronizzare questo
+    }
 
     public synchronized String getWalletAsJson() {
         Gson gson = new Gson();
