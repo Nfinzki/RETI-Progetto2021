@@ -552,7 +552,6 @@ public class Winsome {
             String request = "comment /" + idPost + "/" + comment + "/" + currentLoggedUser;
             sendRequest(request);
             readResponse();
-            System.out.println(request);
 
             int responseId = buffer.getInt();
             if (responseId == 0) System.out.println("< Comment added correctly");
