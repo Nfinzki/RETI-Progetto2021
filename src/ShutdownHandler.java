@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.nio.channels.Selector;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -18,8 +20,9 @@ public class ShutdownHandler {
     private final ThreadPoolExecutor threadPool;
     private final List<Thread> activeThreads;
     private final AtomicBoolean stateChanged;
+    private final Selector selector;
 
-    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, List<Thread> activeThreads, AtomicBoolean stateChanged) {
+    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, List<Thread> activeThreads, AtomicBoolean stateChanged, Selector selector) {
         this.usersFile = usersFile;
         this.postsFile = postsFile;
         this.users = users;
@@ -27,9 +30,12 @@ public class ShutdownHandler {
         this.threadPool = threadPool;
         this.activeThreads = activeThreads;
         this.stateChanged = stateChanged;
+        this.selector = selector;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
+                try {selector.close();} catch (IOException ignored) {}
+
                 threadPool.shutdown();
 
                 for (Thread thread : activeThreads)

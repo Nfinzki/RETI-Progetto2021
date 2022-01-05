@@ -70,6 +70,16 @@ public class ServerMain {
         callbackHandler = new CallbackHandler();
         initializeRegisterService();
 
+        //Opens the selector
+        Selector selector = null;
+        try {
+            selector = Selector.open();
+        } catch (IOException e) {
+            System.err.println("Error while opening selector: (" + e.getMessage() + ")");
+            System.exit(1);
+        }
+
+        //Initializes the activeThread list
         List<Thread> activeThread = new ArrayList<>();
 
         //Creates and starts the thread that calculates the revenue
@@ -91,16 +101,15 @@ public class ServerMain {
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
         //Creates the ShutdownHook to terminate the server correctly
-        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool, activeThread, stateChanged);
+        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool, activeThread, stateChanged, selector);
 
         //Opens the server
-        multiplexChannels(threadPool);
+        multiplexChannels(threadPool, selector);
     }
 
-    private static void multiplexChannels(Executor threadPool) {
+    private static void multiplexChannels(Executor threadPool, Selector selector) {
         try (ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-             ServerSocket serverSocket = serverSocketChannel.socket();
-             Selector selector = Selector.open()) {
+             ServerSocket serverSocket = serverSocketChannel.socket()) {
 
             serverSocket.bind(new InetSocketAddress(serverIP, tcpPort)); //Associa il socket alla porta
             serverSocketChannel.configureBlocking(false); //Imposta la modalità non bloccante
@@ -111,6 +120,8 @@ public class ServerMain {
             while (true) {
                 //Attesa di una richiesta
                 selector.select();
+
+                if (!selector.isOpen()) break; //Terminazione del thread
 
                 for (Registable r : readyToBeRegistered) {
                     try {
@@ -165,6 +176,8 @@ public class ServerMain {
             System.err.println("IOException: " + e.getMessage());
             System.exit(1);
         }
+
+        System.out.println("Server closed");
     }
 
     private static void initializeRegisterService() {
