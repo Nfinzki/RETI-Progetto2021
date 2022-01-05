@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +31,13 @@ public class ClientMain {
         Winsome winsome = null;
         try {
             winsome = new Winsome(serverIP, tcpPort, registryHost, registryPort, registerServiceName, callbackServiceName, bufferSize);
-        } catch (Exception ignored){} //TODO Migliorare qui
+        } catch (RemoteException e) {
+            System.err.println("< Error while getting the registry: (" + e.getMessage() + ")");
+            System.exit(1);
+        } catch (NotBoundException e) {
+            System.err.println("< Error while recovering stubs: (" + e.getMessage() + ")");
+            System.exit(1);
+        }
 
         Scanner cliScanner = new Scanner(System.in);
         String command;
@@ -48,7 +56,6 @@ public class ClientMain {
                     }
 
                     List<String> tags = new ArrayList<>(Arrays.asList(arguments).subList(3, arguments.length));
-                    assert winsome != null;
                     winsome.register(arguments[1], arguments[2], tags);
                 }
 
@@ -57,14 +64,10 @@ public class ClientMain {
                         System.err.println("< Usage: login username password");
                     }
 
-                    assert winsome != null;
                     winsome.login(arguments[1], arguments[2]);
                 }
 
-                case "logout" -> {
-                    assert winsome != null;
-                    winsome.logout();
-                }
+                case "logout" -> winsome.logout();
 
                 case "list" -> {
                     if (arguments.length != 2 || (!arguments[1].equals("users") && !arguments[1].equals("following") && !arguments[1].equals("followers"))) {
@@ -73,13 +76,10 @@ public class ClientMain {
                     }
 
                     if (arguments[1].equals("users")) { //list users
-                        assert winsome != null;
                         winsome.listUsers();
                     } else if (arguments[1].equals("followers")) { //list followers
-                        assert winsome != null;
                         winsome.listFollowers();
                     } else { //list following
-                        assert winsome != null;
                         winsome.listFollowing();
                     }
                 }
@@ -90,7 +90,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     winsome.followUser(arguments[1]);
                 }
 
@@ -100,7 +99,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     winsome.unfollowUser(arguments[1]);
                 }
 
@@ -110,7 +108,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     winsome.viewBlog();
                 }
 
@@ -132,7 +129,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     winsome.createPost(title, content);
                 }
 
@@ -143,7 +139,6 @@ public class ClientMain {
                     }
 
                     if (arguments[1].equals("feed")) { //show feed
-                        assert winsome != null;
                         winsome.showFeed();
                     } else { //show post
                         if (arguments.length != 3) {
@@ -151,7 +146,6 @@ public class ClientMain {
                             break;
                         }
 
-                        assert winsome != null;
                         winsome.showPost(arguments[2]);
                     }
                 }
@@ -162,7 +156,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     winsome.deletePost(arguments[1]);
                 }
 
@@ -172,7 +165,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     winsome.rewinPost(arguments[1]);
                 }
 
@@ -182,7 +174,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     winsome.ratePost(arguments[1], arguments[2]);
                 }
 
@@ -195,7 +186,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     winsome.addComment(idPost, comment);
                 }
 
@@ -205,7 +195,6 @@ public class ClientMain {
                         break;
                     }
 
-                    assert winsome != null;
                     if (arguments.length == 2) { //wallet btc
                         winsome.getWalletInBitcoin();
                     } else { //wallet
@@ -216,7 +205,6 @@ public class ClientMain {
                 case "exit" -> { //TODO Scrivere nella relazione che si è voluto inserire questo comando per terminare il client
                     termination = true;
 
-                    assert winsome != null;
                     winsome.close();
                 }
 
