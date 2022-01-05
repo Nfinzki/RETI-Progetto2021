@@ -11,12 +11,12 @@ public class RevenueCalculator implements Runnable{
     private final Map<String, User> users;
     private final Map<Integer, Post> posts;
     private final int calculationTime;
-    private final int authorPercentage;
+    private final double authorPercentage;
     private final String multicastIP;
     private final int multicastPort;
     private final AtomicBoolean stateChanged;
 
-    public RevenueCalculator(Map<String, User> users, Map<Integer, Post> posts, int calculationTime, int authorPercentage, String multicastIP, int multicastPort, AtomicBoolean stateChanged) {
+    public RevenueCalculator(Map<String, User> users, Map<Integer, Post> posts, int calculationTime, double authorPercentage, String multicastIP, int multicastPort, AtomicBoolean stateChanged) {
         if (authorPercentage < 0 || authorPercentage > 100) throw new IllegalArgumentException("authorPercentage is not a percentage");
         this.users = users;
         this.posts = posts;
