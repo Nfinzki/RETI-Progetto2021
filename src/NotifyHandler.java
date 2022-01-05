@@ -5,24 +5,27 @@ import java.net.MulticastSocket;
 
 public class NotifyHandler implements Runnable {
     private final String multicastIP;
-    private final int multicastPort;
+    private final MulticastSocket multicastSocket;
 
-    public NotifyHandler(String multicastIP, int multicastPort) {
+    public NotifyHandler(String multicastIP, MulticastSocket multicastSocket) {
         this.multicastIP = multicastIP;
-        this.multicastPort = multicastPort;
+        this.multicastSocket = multicastSocket;
     }
 
     public void run() {
-        try (MulticastSocket multicastSocket = new MulticastSocket(multicastPort)) {
+        try {
             InetAddress address = InetAddress.getByName(multicastIP);
-            if (!address.isMulticastAddress()) throw new IllegalArgumentException("Not a multicast address: " + multicastIP);
-
+            if (!address.isMulticastAddress())
+                throw new IllegalArgumentException("Not a multicast address: " + multicastIP);
             multicastSocket.joinGroup(address);
+        } catch (IOException e) {
+            System.err.println("Error while joining the multicast group: (" + e.getMessage() + ")");
+        }
 
+        try {
             int bufferSize = 512;
-            byte []messaggeBuffer = new byte[bufferSize];
-            DatagramPacket packet = new DatagramPacket(messaggeBuffer, messaggeBuffer.length);
-
+            byte[] messageBuffer = new byte[bufferSize];
+            DatagramPacket packet = new DatagramPacket(messageBuffer, messageBuffer.length);
             while (!Thread.currentThread().isInterrupted()) {
                 multicastSocket.receive(packet);
                 String notification = new String(packet.getData(), 0, packet.getLength());
@@ -30,8 +33,6 @@ public class NotifyHandler implements Runnable {
                 if (!Thread.currentThread().isInterrupted())
                     System.out.print("\n< " + notification + "\n> ");
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException ignored) {}
     }
 }

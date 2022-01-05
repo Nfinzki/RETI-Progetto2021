@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.rmi.NoSuchObjectException;
@@ -27,6 +28,7 @@ public class Winsome {
 
     private List<String> followers;
 
+    private MulticastSocket multicastSocket;
     private Thread multicastThread;
 
     private final CallbackHandlerInterface serverCallbackHandler;
@@ -172,6 +174,7 @@ public class Winsome {
                 socketChannel = null;
 
                 multicastThread.interrupt();
+                multicastSocket.close();
 
                 followers = null;
                 serverCallbackHandler.unregisterForCallback(currentLoggedUser, callbackStub);
@@ -214,7 +217,9 @@ public class Winsome {
                 JsonObject jsonObject = JsonParser.parseString(multicastReferences).getAsJsonObject();
                 String multicastIP = jsonObject.get("multicastIP").getAsString();
                 int multicastPort = jsonObject.get("multicastPort").getAsInt();
-                multicastThread = new Thread(new NotifyHandler(multicastIP, multicastPort));
+
+                multicastSocket = new MulticastSocket(multicastPort);
+                multicastThread = new Thread(new NotifyHandler(multicastIP, multicastSocket));
                 multicastThread.start();
 
                 followers = new ArrayList<>();
@@ -229,7 +234,7 @@ public class Winsome {
                 socketChannel.close();
                 socketChannel = null;
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             System.err.println("Error during login, please try again (" + e.getMessage() + ")");
         }
     }
@@ -669,6 +674,7 @@ public class Winsome {
 
     public void close() {
         multicastThread.interrupt();
+        multicastSocket.close();
         try {
             UnicastRemoteObject.unexportObject(followerCallback, true);
         } catch (NoSuchObjectException ignored) {}
