@@ -58,9 +58,7 @@
       "mamma",
       "film"
     ],
-    "follower": [
-      "nfinzki"
-    ],
+    "follower": [],
     "followed": [],
     "blog": [],
     "wallet": {
@@ -77,7 +75,9 @@
       "tecnologia",
       "giochi"
     ],
-    "follower": [],
+    "follower": [
+      "nfinzki"
+    ],
     "followed": [],
     "blog": [],
     "wallet": {
@@ -115,12 +115,12 @@
     ],
     "followed": [
       "utente",
-      "luca",
       "Stefano"
     ],
     "blog": [
       0,
-      1
+      1,
+      2
     ],
     "wallet": {
       "wincoin": 0.017689841492409444,

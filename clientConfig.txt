@@ -14,7 +14,7 @@ SERVER-IP=localhost
 TCP-PORT=6666
 
 # Size of the buffer
-BUFFER-SIZE=16384
+BUFFER-SIZE=16348
 
 # Callback service name
 RMI-CALLBACK=RMI-FOLLOWER-CALLBACK
