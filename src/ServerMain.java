@@ -1,3 +1,5 @@
+import com.google.gson.JsonElement;
+
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -117,6 +119,7 @@ public class ServerMain {
 
             System.out.println("Server started");
 
+            JsonElement jsonElement = null;
             while (true) {
                 //Attesa di una richiesta
                 selector.select();
@@ -126,6 +129,7 @@ public class ServerMain {
                 for (Registable r : readyToBeRegistered) {
                     try {
                         r.getClientChannel().register(selector, r.getOperation(), r.getByteBuffer());
+                        jsonElement = r.getJsonElement();
                     } catch (ClosedChannelException e) {
                         System.err.println("Error while registering a channel: " + e.getMessage());
                         break;
@@ -163,7 +167,7 @@ public class ServerMain {
                             threadPool.execute(new ReaderWorker(key, users, posts, loggedUsers, callbackHandler, readyToBeRegistered, selector, stateChanged));
                         } else if (key.isWritable()) { //Il client è pronto in scrittura
                             key.cancel();
-                            threadPool.execute(new WriterWorker(key, readyToBeRegistered, selector));
+                            threadPool.execute(new WriterWorker(key, readyToBeRegistered, selector, jsonElement));
                         }
                     } catch (IOException e) {
                         System.err.println("Error serving requests: " + e.getMessage());

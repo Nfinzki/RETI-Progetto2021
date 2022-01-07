@@ -46,6 +46,52 @@ public class Winsome {
         serverCallbackHandler = (CallbackHandlerInterface) registry.lookup(callbackServiceName);
     }
 
+    public void sendRequest(String command) throws IOException{
+        if (socketChannel == null) {
+            System.err.println("No user is logged in");
+            return;
+        }
+
+        buffer.clear();
+
+        //Puts the command length
+        buffer.putInt(command.getBytes().length);
+        //Puts the command
+        buffer.put(command.getBytes());
+
+        //Sets the buffer ready for writing to the channel
+        buffer.flip();
+        //Writes to the channel
+        socketChannel.write(buffer);
+    }
+
+    public void readResponse() throws IOException {
+        buffer.clear();
+        //Reads the response
+        socketChannel.read(buffer);
+        //Sets the buffer ready to be read
+        buffer.flip();
+    }
+
+    private String extractResponse() throws IOException {
+        int strLen = buffer.getInt();
+        int totalRead = 0;
+        StringBuilder multicastReferences = new StringBuilder();
+
+        while (totalRead < strLen) {
+            byte[] strByte = new byte[buffer.limit() - buffer.position()];
+            buffer.get(strByte);
+            multicastReferences.append(new String(strByte));
+
+            totalRead += strByte.length;
+
+            if (totalRead == strLen) break;
+
+            readResponse();
+        }
+        return multicastReferences.toString();
+    }
+
     public void ratePost(String idPost, String vote) {
         if (socketChannel == null || currentLoggedUser == null) {
             System.err.println("< There is no user logged in");
@@ -68,14 +114,6 @@ public class Winsome {
         } catch (IOException e) {
             System.err.println("Error while rating the post (" + e.getMessage() + ")");
         }
-    }
-
-    public void readResponse() throws IOException {
-        buffer.clear();
-        //Reads the response
-        socketChannel.read(buffer);
-        //Sets the buffer ready to be read
-        buffer.flip();
     }
 
     public void followUser(String idUser) {
@@ -137,25 +175,6 @@ public class Winsome {
         }
     }
 
-    public void sendRequest(String command) throws IOException{
-        if (socketChannel == null) {
-            System.err.println("No user is logged in");
-            return;
-        }
-
-        buffer.clear();
-
-        //Puts the command length
-        buffer.putInt(command.getBytes().length);
-        //Puts the command
-        buffer.put(command.getBytes());
-
-        //Sets the buffer ready for writing to the channel
-        buffer.flip();
-        //Writes to the channel
-        socketChannel.write(buffer);
-    }
-
     public void logout() {
         if (currentLoggedUser == null) {
             System.err.println("< There are no user logged");
@@ -209,10 +228,7 @@ public class Winsome {
                 System.out.println("< " + username + " logged in");
                 currentLoggedUser = username;
 
-                int strLen = buffer.getInt();
-                byte []strByte = new byte[strLen];
-                buffer.get(strByte);
-                String multicastReferences = new String(strByte);
+                String multicastReferences = extractResponse();
 
                 JsonObject jsonObject = JsonParser.parseString(multicastReferences).getAsJsonObject();
                 String multicastIP = jsonObject.get("multicastIP").getAsString();
@@ -245,13 +261,9 @@ public class Winsome {
             readResponse();
 
             buffer.getInt();
-            int strLen = buffer.getInt();
-            byte []strByte = new byte[strLen];
-            buffer.get(strByte);
-            String userFollowers = new String(strByte);
+            String userFollowers = extractResponse();
 
             if (userFollowers.equals("[]")) return;
-
             getUserFromJson(followers, userFollowers);
 
         } catch (IOException e) {
@@ -282,10 +294,7 @@ public class Winsome {
             }
 
             if (responseId == 0) {
-                int resultLen = buffer.getInt();
-                byte []resultByte = new byte[resultLen];
-                buffer.get(resultByte);
-                String result = new String(resultByte);
+                String result = extractResponse();
 
                 System.out.printf("< %10s%10s%10s\n", "Users", "|", "Tags");
                 System.out.println("< ----------------------------------------");
@@ -369,10 +378,7 @@ public class Winsome {
 
             int responseId = buffer.getInt();
             if (responseId == 0) {
-                int strLen = buffer.getInt();
-                byte []strByte = new byte[strLen];
-                buffer.get(strByte);
-                String userFollowing = new String(strByte);
+                String userFollowing = extractResponse();
 
                 System.out.printf("< %10s%10s%10s\n", "Users", "|", "Tags");
                 System.out.println("< ----------------------------------------");
@@ -410,10 +416,7 @@ public class Winsome {
 
             int responseId = buffer.getInt();
             if (responseId == 0) {
-                int strLen = buffer.getInt();
-                byte []strByte = new byte[strLen];
-                buffer.get(strByte);
-                String blogPosts = new String(strByte);
+                String blogPosts = extractResponse();
 
                 System.out.printf("< %-4s %s %-14s %s %10s\n", "Id", "|", "Author", "|", "Title");
                 System.out.println("< ---------------------------------------------------------");
@@ -442,17 +445,13 @@ public class Winsome {
 
         try {
             String request = "show post " + idPost + " " + currentLoggedUser;
-            System.out.println(request);
             sendRequest(request);
             readResponse();
 
             int responseId = buffer.getInt();
             if (responseId == -1) System.err.println("< Invalid command");
             if (responseId == 0) {
-                int strLen = buffer.getInt();
-                byte []strByte = new byte[strLen];
-                buffer.get(strByte);
-                String post = new String(strByte);
+                String post = extractResponse();
 
                 JsonObject jsonObject = JsonParser.parseString(post).getAsJsonObject();
                 String postTitle = jsonObject.get("postTitle").getAsString();
@@ -497,10 +496,7 @@ public class Winsome {
 
             int responseId = buffer.getInt();
             if (responseId == 0) {
-                int strLen = buffer.getInt();
-                byte []strByte = new byte[strLen];
-                buffer.get(strByte);
-                String blogPosts = new String(strByte);
+                String blogPosts = extractResponse();
 
                 System.out.printf("< %-4s %s %-14s %s %10s\n", "Id", "|", "Author", "|", "Title");
                 System.out.println("< ---------------------------------------------------------");
@@ -579,10 +575,7 @@ public class Winsome {
             int responseId = buffer.getInt();
             if (responseId == -1) System.err.println("< Invalid command. Use 'wallet' or 'wallet btc'");
             if (responseId == 0) {
-                int strLen = buffer.getInt();
-                byte []strByte = new byte[strLen];
-                buffer.get(strByte);
-                String wallet = new String(strByte);
+                String wallet = extractResponse();
 
                 JsonObject jsonObject = JsonParser.parseString(wallet).getAsJsonObject();
                 double wincoin = jsonObject.get("wincoin").getAsDouble();
@@ -623,10 +616,7 @@ public class Winsome {
             int responseId = buffer.getInt();
             if (responseId == -1) System.err.println("< Invalid command. Use 'wallet' or 'wallet btc'");
             if (responseId == 0) {
-                int strLen = buffer.getInt();
-                byte []strByte = new byte[strLen];
-                buffer.get(strByte);
-                String wallet = new String(strByte);
+                String wallet = extractResponse();
 
                 JsonObject jsonObject = JsonParser.parseString(wallet).getAsJsonObject();
                 double btc = jsonObject.get("wincoinBTC").getAsDouble();
