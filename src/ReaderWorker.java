@@ -11,7 +11,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,6 +29,8 @@ public class ReaderWorker implements Runnable {
     private final Selector selector;
 
     private final AtomicBoolean stateChanged;
+
+    private JsonElement jsonElement = null;
 
     public ReaderWorker(SelectionKey key, Map<String, User> users, Map<Integer, Post> posts, Map<String, Socket> loggedUsers, CallbackHandler callbackHandler, Set<Registable> readyToBeRegistered, Selector selector, AtomicBoolean stateChanged) {
         this.key = key;
@@ -213,8 +214,26 @@ public class ReaderWorker implements Runnable {
             default -> setResponse(-2);
         }
 
-        readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer)); //Marks the client as ready
-        selector.wakeup(); //Wakes up the selector to re-register the key
+        //Marks the client as ready
+        readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer, jsonElement));
+        //Wakes up the selector to re-register the key
+        selector.wakeup();
+    }
+
+    /**
+     * Reads bytes from channel and writes to the buffer
+     * @return the number of bytes read
+     * @throws IOException if some IO error occurs
+     */
+    private int readFromChannelToBuffer() throws IOException{
+        //Prepares for writing to the buffer
+        byteBuffer.clear();
+        //Writes to the buffer
+        int byteRead = client.read(byteBuffer);
+        //Prepares the buffer to be read
+        byteBuffer.flip();
+
+        return byteRead;
     }
 
     /**
@@ -223,17 +242,39 @@ public class ReaderWorker implements Runnable {
      */
     private String readRequest() {
         try {
-            byteBuffer.clear(); //Prepares for writing to the buffer
-            int byteRead = client.read(byteBuffer); //Writes to the buffer
-            byteBuffer.flip(); //Prepares the buffer to be read
+            //Reads bytes from the channel
+            int byteRead = readFromChannelToBuffer();
 
             //Checks if the client sent the termination signal
             if (byteRead == -1) throw new IOException("Client disconnected");
 
-            int requestLen = byteBuffer.getInt(); //Reads the request length
-            byte[] requestBytes = new byte[requestLen];
-            byteBuffer.get(requestBytes); //Reads the request in bytes
-            return new String(requestBytes); //Creates the request string
+            //Reads the request len
+            int requestLen = byteBuffer.getInt();
+            int totalRead = 0; //Bytes read
+            StringBuilder request = new StringBuilder();
+
+            //Reads all the request bytes
+            while (totalRead < requestLen) {
+                //Initializes the byte array to read the bytes
+                byte[] requestByte = new byte[byteBuffer.limit() - byteBuffer.position()];
+                //Gets all the bytes in the buffer
+                byteBuffer.get(requestByte);
+                //Adds the current bytes read to the request
+                request.append(new String(requestByte));
+
+                //Updates the bytes read
+                totalRead += requestByte.length;
+
+                //Checks if read all the request
+                if (totalRead == requestLen) break;
+
+                //Reads bytes from the channel
+                byteRead = readFromChannelToBuffer();
+                if (byteRead == -1) throw new IOException("Client disconnected");
+            }
+
+            return request.toString();
+
         } catch (IOException e) {
             try {client.close();} catch (Exception ignored) {}
         }
@@ -248,30 +289,6 @@ public class ReaderWorker implements Runnable {
     private void setResponse(int code) {
         byteBuffer.clear(); //Prepares the buffer to be written
         byteBuffer.putInt(code); //Writes the response code
-    }
-
-    /**
-     * Sets the response code on the buffer and the json array as result
-     * @param code Response code
-     * @param response response to send to the client
-     */
-    private void setResponse(int code, JsonArray response) {
-        byteBuffer.clear();
-        byteBuffer.putInt(code);
-        byteBuffer.putInt(response.toString().getBytes().length);
-        byteBuffer.put(response.toString().getBytes());
-    }
-
-    /**
-     * Sets the response code on the buffer and the json element as result
-     * @param code Response code
-     * @param response response to send to the client
-     */
-    private void setResponse(int code, JsonElement response) {
-        byteBuffer.clear();
-        byteBuffer.putInt(code);
-        byteBuffer.putInt(response.toString().getBytes().length);
-        byteBuffer.put(response.toString().getBytes());
     }
 
     /**
@@ -296,8 +313,8 @@ public class ReaderWorker implements Runnable {
                     }
 
                     //Sets the references for the multicast group to send to the client
-                    JsonElement multicastReferences = JsonParser.parseString("{\"multicastIP\": \"" + ServerMain.multicastIP + "\", \"multicastPort\": " + ServerMain.multicastPort + "}");
-                    setResponse(0, multicastReferences);
+                    jsonElement = JsonParser.parseString("{\"multicastIP\": \"" + ServerMain.multicastIP + "\", \"multicastPort\": " + ServerMain.multicastPort + "}");
+                    setResponse(0);
                 } else //The password isn't correct
                     setResponse(1);
             } else { //The user is not registered
@@ -331,7 +348,7 @@ public class ReaderWorker implements Runnable {
         }
 
         Gson gson = new Gson();
-        JsonArray jsonResponse = new JsonArray(); //TODO Probabilmente andrebbero inviati uno alla volta
+        JsonArray jsonResponse = new JsonArray();
 
         //Gets the user information
         User user = users.get(username);
@@ -350,7 +367,9 @@ public class ReaderWorker implements Runnable {
             }
         }
 
-        setResponse(0, jsonResponse);
+        //Sets the response
+        setResponse(0);
+        jsonElement = jsonResponse;
     }
 
     /**
@@ -529,6 +548,7 @@ public class ReaderWorker implements Runnable {
         posts.remove(idPost);
         //Removes the post from the post list of the user
         user.removePost(idPost);
+
         //Removes the post from the post list of all the user who
         //rewinned the post
         for (String rewinner : post.getRewinner()) {
@@ -564,7 +584,9 @@ public class ReaderWorker implements Runnable {
             );
         }
 
-        setResponse(0, jsonResponse);
+        //Sets the response
+        setResponse(0);
+        jsonElement = jsonResponse;
     }
 
     /**
@@ -592,7 +614,9 @@ public class ReaderWorker implements Runnable {
                 jsonResponse.add(JsonParser.parseString(post.basicInfoToJson()));
         }
 
-        setResponse(0, jsonResponse);
+        //Sets the response
+        setResponse(0);
+        jsonElement = jsonResponse;
     }
 
     /**
@@ -614,7 +638,9 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
-        setResponse(0, JsonParser.parseString(post.toJson()));
+        //Sets the response
+        setResponse(0);
+        jsonElement = JsonParser.parseString(post.toJson());
     }
 
     /**
@@ -636,6 +662,7 @@ public class ReaderWorker implements Runnable {
         for (String usernameFollowed : user.getFollowed()) {
             //Gets information about the user
             User userFollowed = users.get(usernameFollowed);
+
             //Adds every post who's made by that user to the json array
             //even the rewinned one
             for (int postId : userFollowed.getBlog()) {
@@ -645,7 +672,9 @@ public class ReaderWorker implements Runnable {
             }
         }
 
-        setResponse(0, jsonResponse);
+        //Sets the response
+        setResponse(0);
+        jsonElement = jsonResponse;
     }
 
     /**
@@ -735,8 +764,10 @@ public class ReaderWorker implements Runnable {
 
         //Gets the information about the user
         User user = users.get(username);
+
         //Sets the wallet as JsonElement as response
-        setResponse(0, JsonParser.parseString(user.getWalletAsJson()));
+        setResponse(0);
+        jsonElement = JsonParser.parseString(user.getWalletAsJson());
     }
 
     /**
@@ -768,7 +799,8 @@ public class ReaderWorker implements Runnable {
         response += "]}"; //Ends the json string
 
         //Sets the response
-        setResponse(0, JsonParser.parseString(response));
+        setResponse(0);
+        jsonElement = JsonParser.parseString(response);
     }
 
     /**
@@ -780,6 +812,7 @@ public class ReaderWorker implements Runnable {
         User user = users.get(username);
 
         //Sets the response
-        setResponse(0, JsonParser.parseString(user.getFollowersAsJson()));
+        setResponse(0);
+        jsonElement = JsonParser.parseString(user.getFollowersAsJson());
     }
 }

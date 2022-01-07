@@ -46,7 +46,15 @@ public class Winsome {
         serverCallbackHandler = (CallbackHandlerInterface) registry.lookup(callbackServiceName);
     }
 
-    public void sendRequest(String command) throws IOException{
+    private void writeToChannel() throws IOException {
+        //Sets the buffer ready for writing to the channel
+        buffer.flip();
+
+        //Writes to the channel
+        socketChannel.write(buffer);
+    }
+
+    private void sendRequest(String command) throws IOException{
         if (socketChannel == null) {
             System.err.println("No user is logged in");
             return;
@@ -54,18 +62,39 @@ public class Winsome {
 
         buffer.clear();
 
-        //Puts the command length
-        buffer.putInt(command.getBytes().length);
-        //Puts the command
-        buffer.put(command.getBytes());
+        byte []requestBytes = command.getBytes();
 
-        //Sets the buffer ready for writing to the channel
-        buffer.flip();
-        //Writes to the channel
-        socketChannel.write(buffer);
+        //Puts the command length
+        buffer.putInt(requestBytes.length);
+
+        int bufferCapacity = buffer.capacity() - buffer.position();
+
+        if (requestBytes.length <= bufferCapacity) {
+            //Puts the command
+            buffer.put(requestBytes);
+
+            writeToChannel();
+        } else {
+            int startingIndex = 0;
+
+            while (startingIndex < requestBytes.length) {
+                //Puts the command
+                buffer.put(requestBytes, startingIndex, bufferCapacity);
+
+                writeToChannel();
+                buffer.clear();
+
+                startingIndex += bufferCapacity;
+                if (bufferCapacity < requestBytes.length - startingIndex)
+                    bufferCapacity = buffer.capacity();
+                else
+                    bufferCapacity = requestBytes.length - startingIndex;
+            }
+
+        }
     }
 
-    public void readResponse() throws IOException {
+    private void readResponse() throws IOException {
         buffer.clear();
         //Reads the response
         socketChannel.read(buffer);
@@ -76,12 +105,12 @@ public class Winsome {
     private String extractResponse() throws IOException {
         int strLen = buffer.getInt();
         int totalRead = 0;
-        StringBuilder multicastReferences = new StringBuilder();
+        StringBuilder response = new StringBuilder();
 
         while (totalRead < strLen) {
             byte[] strByte = new byte[buffer.limit() - buffer.position()];
             buffer.get(strByte);
-            multicastReferences.append(new String(strByte));
+            response.append(new String(strByte));
 
             totalRead += strByte.length;
 
@@ -89,7 +118,7 @@ public class Winsome {
 
             readResponse();
         }
-        return multicastReferences.toString();
+        return response.toString();
     }
 
     public void ratePost(String idPost, String vote) {
@@ -328,13 +357,11 @@ public class Winsome {
         }
 
         String request = "post /" + title + "/" + content + "/" + currentLoggedUser;
-        System.out.println(request);
         try {
             sendRequest(request);
             readResponse();
 
             int responseId = buffer.getInt();
-            System.out.println(responseId);
             if (responseId == 0) System.out.println("< Post created correctly");
             if (responseId == 1) System.err.println("< There is no user logged in");
             if (responseId == 2) System.err.println("< Invalid post arguments. Title must have less then 20 characters, the content mush have less then 500 characters");
