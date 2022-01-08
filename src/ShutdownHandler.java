@@ -1,16 +1,16 @@
-import java.io.IOException;
-import java.nio.channels.Selector;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  *	Handler for termination that saves the state of the server
  *	when Ctrl+C is pressed or even when the server is terminated.
  *  Ensures that is always possible to recover the state of the server
  *  after a reboot
  */
+
+import java.io.IOException;
+import java.nio.channels.Selector;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ShutdownHandler {
     private final String usersFile;
@@ -34,20 +34,26 @@ public class ShutdownHandler {
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
+                //Closes the selector
                 try {selector.close();} catch (IOException ignored) {}
 
+                //Shutdowns the threadpool
                 threadPool.shutdown();
 
+                //Interrupts every thread active
                 for (Thread thread : activeThreads)
                     thread.interrupt();
 
+                //If the state changed saves the state of the server
                 if (stateChanged.get()) {
                     //Saves the server state
                     SaveState.serverStateToJson(users, usersFile);
                     SaveState.serverStateToJson(posts, postsFile);
+
                     stateChanged.set(false);
                 }
 
+                //If threadpool isn't terminated forces the shutdown
                 if (!threadPool.isTerminated()) threadPool.shutdownNow();
             }
         });

@@ -11,23 +11,28 @@ import java.util.Scanner;
 public class ClientMain {
     private static String configurationFile = "clientConfig.txt";
 
-    private static int registryPort = 11111; //TODO Mettere una porta di default più significativa
+    private static int registryPort = 11111;
     private static String registryHost = "localhost";
     private static String registerServiceName = "RMI-REGISTER";
     private static String callbackServiceName = "RMI-FOLLOWER-CALLBACK";
+
     private static String serverIP = "localhost";
     private static int tcpPort = 2222;
+
     private static int bufferSize = 16 * 1024;
 
     public static void main(String []args) {
+        //Checks if is specified a different configuration file
         if (args.length == 1) configurationFile = args[0];
         if (args.length > 1) {
             System.err.println("Usage: ClientMain [config file]");
             System.exit(1);
         }
 
+        //Parses the configuration file
         parseConfigFile();
 
+        //Initializes the Winsome API
         Winsome winsome = null;
         try {
             winsome = new Winsome(serverIP, tcpPort, registryHost, registryPort, registerServiceName, callbackServiceName, bufferSize);
@@ -39,35 +44,47 @@ public class ClientMain {
             System.exit(1);
         }
 
+        //Initializes the scanner to read input from CLI
         Scanner cliScanner = new Scanner(System.in);
         String command;
         boolean termination = false;
 
         while (!termination) {
             System.out.print("> ");
+            //Reads the command
             command = cliScanner.nextLine();
 
             String []arguments = command.split(" ");
+
             switch (arguments[0]) {
                 case "register" -> {
                     if (arguments.length > 8) {
-                        System.err.println("< Usage: register username password tags (max 5 tag)");
-                        return;
+                        System.out.println("< Usage: register username password tags (max 5 tag)");
+                        break;
                     }
 
+                    //Extract the tag list from the command
                     List<String> tags = new ArrayList<>(Arrays.asList(arguments).subList(3, arguments.length));
                     winsome.register(arguments[1], arguments[2], tags);
                 }
 
                 case "login" -> {
                     if (command.split(" ").length != 3) {
-                        System.err.println("< Usage: login username password");
+                        System.out.println("< Usage: login username password");
+                        break;
                     }
 
                     winsome.login(arguments[1], arguments[2]);
                 }
 
-                case "logout" -> winsome.logout();
+                case "logout" -> {
+                    if (command.split(" ").length != 1) {
+                        System.out.println("< Usage: logout");
+                        break;
+                    }
+
+                    winsome.logout();
+                }
 
                 case "list" -> {
                     if (arguments.length != 2 || (!arguments[1].equals("users") && !arguments[1].equals("following") && !arguments[1].equals("followers"))) {
@@ -124,6 +141,7 @@ public class ClientMain {
                     //Gets the post content
                     String content = command.substring(openingQuoteIndex + 1, closingQuoteIndex);
 
+                    //Checks if the title or the post content are empty
                     if (title.equals("") || content.equals("")) {
                         System.err.println("< Usage: post \"Title\" \"Content\"");
                         break;
@@ -178,9 +196,12 @@ public class ClientMain {
                 }
 
                 case "comment" -> {
+                    //Gets the post id
                     String idPost = command.split(" ")[1];
+                    //Gets the comment
                     String comment = command.substring(command.indexOf("\"") + 1, command.lastIndexOf("\""));
 
+                    //Checks if the comment is empty
                     if (comment.equals("")) {
                         System.err.println("< Usage: comment <idPost> <comment>");
                         break;
@@ -202,7 +223,8 @@ public class ClientMain {
                     }
                 }
 
-                case "exit" -> { //TODO Scrivere nella relazione che si è voluto inserire questo comando per terminare il client
+                case "exit" -> {
+                    //Sets the termination flag to true
                     termination = true;
 
                     winsome.close();
@@ -213,7 +235,9 @@ public class ClientMain {
         }
     }
 
-    //Parsing del file di configurazione del client
+    /**
+     * Parses the configuration file
+     */
     private static void parseConfigFile() {
         try {
             BufferedReader fileReader = new BufferedReader(new FileReader(configurationFile));
@@ -236,6 +260,7 @@ public class ClientMain {
                     case "RMI-CALLBACK" -> callbackServiceName = line.split("=")[1];
 
                     default -> {
+                        //Checks if the line is not empty and doesn't start with '#'
                         if (!line.equals("") && !line.startsWith("#")) {
                             System.err.println("Invalid option: " + line);
                             System.exit(1);

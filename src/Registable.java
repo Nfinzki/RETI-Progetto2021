@@ -1,3 +1,8 @@
+/**
+ * This is a utility class to mark client as ready
+ * to be re-registered
+ */
+
 import com.google.gson.JsonElement;
 
 import java.nio.ByteBuffer;
@@ -16,18 +21,30 @@ public class Registable {
         this.jsonElement = jsonElement;
     }
 
+    /**
+     * @return socketchannel
+     */
     public SocketChannel getClientChannel() {
         return clientChannel;
     }
 
+    /**
+     * @return operation
+     */
     public int getOperation() {
         return operation;
     }
 
+    /**
+     * @return buffer
+     */
     public ByteBuffer getByteBuffer() {
         return byteBuffer;
     }
 
+    /**
+     * @return JsonElement
+     */
     public JsonElement getJsonElement() {
         return jsonElement;
     }

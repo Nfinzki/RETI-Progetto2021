@@ -1,6 +1,6 @@
 /**
- *	Questo file contiene l'implementazione di una semplice
- *	funzione di hashing basata sull'algoritmo SHA-256.
+ * This file contains the implementation of a hashing function
+ * based on SHA-256 algorithm
  */
 
 import java.security.*;
@@ -8,9 +8,9 @@ import java.security.*;
 public class Hash {
 
     /**
-     *	Metodo che calcola il valore hash SHA-256 di una stringa
-     * 	@param s la stringa di input
-     *  @return i byte corrispondenti al valore hash dell'input
+     *	Calculates the string hash SHA-256 value
+     * 	@param s input string
+     *  @return the bytes corresponding to the input hash value
      */
     public static byte[] sha256(String s) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -19,9 +19,9 @@ public class Hash {
     }
 
     /**
-     *	Metodo per convertire un array di byte in una stringa esadecimale
-     *	@param hash un array di byte
-     *	@return una stringa esadecimale leggibile
+     *	Converts a byte array in an HEX string
+     *	@param hash byte array
+     *	@return HEX string
      */
     public static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder();

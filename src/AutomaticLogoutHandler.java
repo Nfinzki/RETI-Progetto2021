@@ -1,3 +1,8 @@
+/**
+ * This class implements a task to automatically logout users
+ * not connected anymore
+ */
+
 import java.net.Socket;
 import java.util.Map;
 
@@ -13,10 +18,12 @@ public class AutomaticLogoutHandler implements Runnable {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
+                //For each user marked as logged checks if is still connected
                 for (String user : loggedUsers.keySet())
                     if (!loggedUsers.get(user).isConnected())
                         loggedUsers.remove(user);
 
+                //Waits until next iteration
                 Thread.sleep(checkTime);
             }
         } catch (InterruptedException ignored) {}

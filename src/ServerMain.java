@@ -21,10 +21,13 @@ public class ServerMain {
 
     private static String serverIP = "localhost";
     private static int tcpPort = 2222;
+
     public static String multicastIP = "239.255.32.32";
     public static int multicastPort = 4444;
+
     private static int registryPort = 55555;
     private static String registerServiceName = "RMI-REGISTER";
+
     private static int bufferSize = 16 * 1024;
 
     private static int corePoolSize = 5;
@@ -48,6 +51,7 @@ public class ServerMain {
     private static int automaticLogoutCheckTime = 25000;
 
     public static void main(String []args) {
+        //Checks if is specified a different configuration file
         if (args.length == 1) configurationFile = args[0];
         if (args.length > 1) {
             System.err.println("Usage: ServerMain [config file]");
@@ -62,7 +66,7 @@ public class ServerMain {
         posts = new ConcurrentHashMap<>();
         loggedUsers = new ConcurrentHashMap<>();
 
-        //Initializes the Collection to handle reads and writes from/for a client
+        //Initializes the concurrent set to handle reads and writes from/for a client
         readyToBeRegistered = ConcurrentHashMap.newKeySet();
 
         //Recovers the state of the server
@@ -70,7 +74,7 @@ public class ServerMain {
         RecoverState.readPosts(posts, postsFile);
 
         callbackHandler = new CallbackHandler();
-        initializeRegisterService();
+        initializeRMIServices();
 
         //Opens the selector
         Selector selector = null;
@@ -109,26 +113,34 @@ public class ServerMain {
         multiplexChannels(threadPool, selector);
     }
 
+    /**
+     * Manages the connections
+     * @param threadPool thread pool that executes tasks
+     * @param selector selector that multiplexes the channels
+     */
     private static void multiplexChannels(Executor threadPool, Selector selector) {
         try (ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
              ServerSocket serverSocket = serverSocketChannel.socket()) {
 
-            serverSocket.bind(new InetSocketAddress(serverIP, tcpPort)); //Associa il socket alla porta
-            serverSocketChannel.configureBlocking(false); //Imposta la modalità non bloccante
-            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT); //Registra il canale sul Selector
+            serverSocket.bind(new InetSocketAddress(serverIP, tcpPort)); //Binds IP and port to the socket
+            serverSocketChannel.configureBlocking(false); //Sets the non-blocking mode
+            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT); //Register the channel on the selector
 
             System.out.println("Server started");
 
             JsonElement jsonElement = null;
             while (true) {
-                //Attesa di una richiesta
+                //Waits for an operation
                 selector.select();
 
-                if (!selector.isOpen()) break; //Terminazione del thread
+                if (!selector.isOpen()) break; //Thread termination
 
+                //Re-registers the channels ready to be served again
                 for (Registable r : readyToBeRegistered) {
                     try {
+                        //Re-registers the channel
                         r.getClientChannel().register(selector, r.getOperation(), r.getByteBuffer());
+                        //Gets the response to send
                         jsonElement = r.getJsonElement();
                     } catch (ClosedChannelException e) {
                         System.err.println("Error while registering a channel: " + e.getMessage());
@@ -137,35 +149,37 @@ public class ServerMain {
                     readyToBeRegistered.remove(r);
                 }
 
-                //Recupera le chiavi pronte
+                //Gets the ready key
                 Set<SelectionKey> readyKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iterator = readyKeys.iterator();
 
                 while (iterator.hasNext()) {
-                    //Recupera la chiave
+                    //Gets the key
                     SelectionKey key = iterator.next();
                     iterator.remove();
 
                     try {
-                        if (key.isAcceptable()) { //Nuova connessione
-                            ServerSocketChannel server = (ServerSocketChannel) key.channel(); //Recupera il channel
-                            SocketChannel client = server.accept(); //Accetta la connessione del client
+                        if (key.isAcceptable()) { //New connection
+                            ServerSocketChannel server = (ServerSocketChannel) key.channel(); //Gets the channel
+                            SocketChannel client = server.accept(); //Accepts the connection
                             System.out.println(client);
 
-                            client.configureBlocking(false); //Imposta il canale in modalità non bloccante
-                            SelectionKey clientKey = client.register( //Registra il canale sul Selector in lettura
+                            client.configureBlocking(false); //Sets non-blocking mode
+
+                            //Registers the channel in read mode
+                            SelectionKey clientKey = client.register(
                                     selector,
                                     SelectionKey.OP_READ
                             );
 
-                            //Alloca il buffer e fa l'attach con il canale
+                            //Allocates the buffer and attach it to the channel
                             ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
                             clientKey.attach(byteBuffer);
 
-                        } else if (key.isReadable()) { //Il channel è pronto in lettura
+                        } else if (key.isReadable()) { //Channel ready in read mode
                             key.cancel();
                             threadPool.execute(new ReaderWorker(key, users, posts, loggedUsers, callbackHandler, readyToBeRegistered, selector, stateChanged));
-                        } else if (key.isWritable()) { //Il client è pronto in scrittura
+                        } else if (key.isWritable()) { //Channel ready in write mode
                             key.cancel();
                             threadPool.execute(new WriterWorker(key, readyToBeRegistered, selector, jsonElement));
                         }
@@ -184,15 +198,22 @@ public class ServerMain {
         System.out.println("Server closed");
     }
 
-    private static void initializeRegisterService() {
-        SignUpService registerService = new SignUpService(users, posts);
+    /**
+     * Initializes the registration service
+     */
+    private static void initializeRMIServices() {
+        SignUpService registerService = new SignUpService(users);
         try {
+            //Exports the objects
             RegisterInterface registerStub = (RegisterInterface) UnicastRemoteObject.exportObject(registerService, 0);
             CallbackHandlerInterface callbackHandlerStub = (CallbackHandlerInterface) UnicastRemoteObject.exportObject(callbackHandler, 0);
 
+            //Creates the registry
             LocateRegistry.createRegistry(registryPort);
+            //Gets the registry
             Registry registry = LocateRegistry.getRegistry(registryPort);
 
+            //Binds the stubs to the correspondents names
             registry.rebind(registerServiceName, registerStub);
             registry.rebind(callbackHandlerService, callbackHandlerStub);
         } catch (RemoteException e) {
@@ -201,7 +222,9 @@ public class ServerMain {
         }
     }
 
-    //Parsing del file di configurazione del client
+    /**
+     * Parses the configuration file
+     */
     private static void parseConfigFile() {
         try {
             BufferedReader fileReader = new BufferedReader(new FileReader(configurationFile));

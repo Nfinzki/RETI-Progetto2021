@@ -1,3 +1,7 @@
+/**
+ * This class implements a task that periodically saves the state of the server in json files
+ */
+
 import com.google.gson.stream.JsonWriter;
 
 import java.io.FileNotFoundException;
@@ -27,7 +31,7 @@ public class SaveState implements Runnable{
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                if (stateChanged.get()) {
+                if (stateChanged.get()) { //If the state of the server has changed
                     synchronized (posts) {
                         serverStateToJson(posts, postsFile);
                     }
@@ -36,21 +40,31 @@ public class SaveState implements Runnable{
                     }
                     stateChanged.set(false);
                 }
+
+                //Waits until next iteration
                 Thread.sleep(iterationTime);
             }
         } catch (InterruptedException ignored) {}
     }
 
+    /**
+     * Saves the state of the server to a json file
+     * @param map map to save
+     * @param jsonFile file where to save the state
+     */
     public static <K, V extends BufferedSerialization> void serverStateToJson(Map<K, V> map, String jsonFile) {
         try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(jsonFile)))) {
             writer.setIndent("  ");
+
+            //Writes '['
             writer.beginArray();
 
-            //Writes users to the json file
+            //Writes value to the json file
             for(V value : map.values()) {
                 value.toJsonFile(writer);
             }
 
+            //Writes ']'
             writer.endArray();
             writer.flush();
         } catch (FileNotFoundException e) {

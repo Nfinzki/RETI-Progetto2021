@@ -1,3 +1,8 @@
+/**
+ * This class implements a task that reads the request, elaborates it and
+ * prepares the response
+ */
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -211,7 +216,7 @@ public class ReaderWorker implements Runnable {
                 sendFollowers(args[1]);
             }
 
-            default -> setResponse(-2);
+            default -> setResponse(-2); //Invalid request
         }
 
         //Marks the client as ready
@@ -221,7 +226,7 @@ public class ReaderWorker implements Runnable {
     }
 
     /**
-     * Reads bytes from channel and writes to the buffer
+     * Reads bytes from channel and writes it to the buffer
      * @return the number of bytes read
      * @throws IOException if some IO error occurs
      */
@@ -238,7 +243,7 @@ public class ReaderWorker implements Runnable {
 
     /**
      * Reads a request from the SocketChannel
-     * @return the request string or null otherwise
+     * @return the request string or null if some error occur
      */
     private String readRequest() {
         try {
@@ -257,7 +262,7 @@ public class ReaderWorker implements Runnable {
             while (totalRead < requestLen) {
                 //Initializes the byte array to read the bytes
                 byte[] requestByte = new byte[byteBuffer.limit() - byteBuffer.position()];
-                //Gets all the bytes in the buffer
+                //Puts all the bytes in the buffer
                 byteBuffer.get(requestByte);
                 //Adds the current bytes read to the request
                 request.append(new String(requestByte));
@@ -292,7 +297,7 @@ public class ReaderWorker implements Runnable {
     }
 
     /**
-     * Logs in a user inside the social network
+     * Logins a user inside the social network
      * @param username the username of the user to log in
      * @param password the password of the user to log in
      */
@@ -327,7 +332,7 @@ public class ReaderWorker implements Runnable {
     }
 
     /**
-     * Logs out a user from the social network
+     * Logouts a user from the social network
      * @param username the username of the user to logout
      */
     private void logout(String username) {
@@ -353,7 +358,7 @@ public class ReaderWorker implements Runnable {
         //Gets the user information
         User user = users.get(username);
 
-        //Populates the JsonArray with the users who have at least one tag in commong
+        //Populates the JsonArray with the users who have at least one tag in common
         for (User u : users.values()) {
             if (user != u) { //Checks if the user u is not who made the request
                 //Gets the common tags
@@ -784,23 +789,23 @@ public class ReaderWorker implements Runnable {
         User user = users.get(username);
 
         //Creates the json string
-        String response = "{\"wincoinBTC\":" + user.getWallet().wincoinToBTC() + ", \"transactions\": [";
+        StringBuilder response = new StringBuilder("{\"wincoinBTC\":" + user.getWallet().wincoinToBTC() + ", \"transactions\": [");
 
         boolean firstEntry = true;
         //Adds every transaction to the json string
         for (Transaction t : user.getWallet().getTransactions()) {
             //If it's not the first entry, adds a comma
-            if (!firstEntry) response += ",";
+            if (!firstEntry) response.append(",");
 
-            response += t.toJson();
+            response.append(t.toJson());
 
             firstEntry = false;
         }
-        response += "]}"; //Ends the json string
+        response.append("]}"); //Ends the json string
 
         //Sets the response
         setResponse(0);
-        jsonElement = JsonParser.parseString(response);
+        jsonElement = JsonParser.parseString(response.toString());
     }
 
     /**

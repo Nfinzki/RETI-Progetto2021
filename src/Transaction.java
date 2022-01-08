@@ -1,3 +1,7 @@
+/**
+ * This class implements a transaction
+ */
+
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
@@ -13,11 +17,18 @@ public class Transaction {
         this.timestamp = timestamp;
     }
 
+    /**
+     * @return transaction in json format
+     */
     public synchronized String toJson() {
         Gson gson = new Gson();
         return gson.toJson(this);
     }
 
+    /**
+     * Writes the post in a file in json format
+     * @param writer writer used to write the object as json object
+     */
     public synchronized void toJsonFile(JsonWriter writer) throws IOException {
         Gson gson = new Gson();
 
@@ -25,7 +36,7 @@ public class Transaction {
         writer.name("action").value(action);
 
         writer.name("timestamp");
-        gson.toJson(timestamp, Date.class, writer);
+        gson.toJson(timestamp, Date.class, writer); //Serializes the Date class
 
         writer.endObject();
         writer.flush();
