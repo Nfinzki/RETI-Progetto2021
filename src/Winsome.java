@@ -156,7 +156,7 @@ public class Winsome {
     /**
      * Adds a vote to a post
      * @param idPost post id of the post to rate
-     * @param vote vote (must be "+1" or "-1"
+     * @param vote vote (must be "+1" or "-1")
      */
     public void ratePost(String idPost, String vote) {
         if (socketChannel == null || currentLoggedUser == null) {
@@ -174,7 +174,7 @@ public class Winsome {
 
             if (responseId == 0) System.out.println("< Post rated correctly");
             if (responseId == 1) System.err.println("< There is no user logged in");
-            if (responseId == 2) System.err.println("< Unknown command. Usage: rate idPost rate (rate must be '+1' or '-1')");
+            if (responseId == -1 || responseId == 2) System.err.println("< Unknown command. Usage: rate idPost rate (rate must be '+1' or '-1')");
             if (responseId == 3) System.err.println("< Post doesn't exists");
             if (responseId == 4) System.err.println("< You can't rate your own post");
             if (responseId == 5) System.err.println("< You've already rated this post");
@@ -357,8 +357,6 @@ public class Winsome {
             if (responseId == 1) System.err.println("< Username or password not correct");
             if (responseId == 2) System.err.println("< Already logged on another terminal");
 
-            //responseId == 1 user not registered or password isn't correct
-            //responseId == 2 user already logged
             if (responseId == 1 || responseId == 2) {
                 //Close the connection with the server
                 socketChannel.close();
@@ -511,6 +509,7 @@ public class Winsome {
 
             //Reads the response code
             int responseId = buffer.getInt();
+            if (responseId == -1) System.out.println("< Invalid request. Usage: delete <idPost>");
             if (responseId == 0) System.out.println("< Post deleted correctly");
             if (responseId == 1) System.err.println("< There is no user logged");
             if (responseId == 2) System.err.println("< This post doesn't exists");
@@ -627,7 +626,7 @@ public class Winsome {
 
             //Reads the response code
             int responseId = buffer.getInt();
-            if (responseId == -1) System.err.println("< Invalid command");
+            if (responseId == -1) System.err.println("< Invalid request. Usage: show post <idPost>");
             if (responseId == 0) {
                 //Gets the response as a string
                 String post = extractResponse();
@@ -727,6 +726,7 @@ public class Winsome {
 
             //Reads the response code
             int responseId = buffer.getInt();
+            if (responseId == -1) System.out.println("< Invalid request. Usage: rewin <idPost>");
             if (responseId == 0) System.out.println("< Post rewinned correctly");
             if (responseId == 1) System.err.println("< There is no user logged");
             if (responseId == 2) System.err.println("< This post doesn't exists");
@@ -755,6 +755,7 @@ public class Winsome {
 
             //Reads the response code
             int responseId = buffer.getInt();
+            if (responseId == -1) System.out.println("< Invalid request. Usage: comment <idPost> \"<comment>\"");
             if (responseId == 0) System.out.println("< Comment added correctly");
             if (responseId == 1) System.err.println("< There is no user logged");
             if (responseId == 2) System.err.println("< Comment can't be empty");
