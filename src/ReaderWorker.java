@@ -113,7 +113,9 @@ public class ReaderWorker implements Runnable {
                     break;
                 }
 
-                deletePost(args[2], Integer.parseInt(args[1]));
+                try {
+                    deletePost(args[2], Integer.parseInt(args[1]));
+                } catch (NumberFormatException e) { setResponse(-1); }
             }
 
             case "follow" -> {
@@ -140,7 +142,9 @@ public class ReaderWorker implements Runnable {
                     break;
                 }
 
-                ratePost(args[3], Integer.parseInt(args[1]), args[2]);
+                try {
+                    ratePost(args[3], Integer.parseInt(args[1]), args[2]);
+                } catch (NumberFormatException e) { setResponse(-1); }
             }
 
             case "blog" -> {
@@ -154,7 +158,9 @@ public class ReaderWorker implements Runnable {
 
             case "show" -> {
                 if (args[1].equals("post") && args.length == 4) {
-                    showPost(Integer.parseInt(args[2]), args[3]);
+                    try {
+                        showPost(Integer.parseInt(args[2]), args[3]);
+                    } catch (NumberFormatException e) { setResponse(-1); }
                     break;
                 }
 
@@ -172,7 +178,9 @@ public class ReaderWorker implements Runnable {
                     break;
                 }
 
-                rewinPost(Integer.parseInt(args[1]), args[2]);
+                try {
+                    rewinPost(Integer.parseInt(args[1]), args[2]);
+                } catch (NumberFormatException e) { setResponse(-1); }
             }
 
             case "comment" -> {
@@ -190,7 +198,9 @@ public class ReaderWorker implements Runnable {
                     break;
                 }
 
-                addComment(Integer.parseInt(commentArgs[1]), comment, username);
+                try {
+                    addComment(Integer.parseInt(commentArgs[1]), comment, username);
+                } catch (NumberFormatException e) { setResponse(-1); }
             }
 
             case "wallet" -> {
