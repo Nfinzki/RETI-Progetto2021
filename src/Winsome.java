@@ -174,7 +174,7 @@ public class Winsome {
 
             if (responseId == 0) System.out.println("< Post rated correctly");
             if (responseId == 1) System.err.println("< There is no user logged in");
-            if (responseId == 2) System.err.println("< Unknown command. Usage: rate idPost rate (rate must be '+1' or '-1'");
+            if (responseId == 2) System.err.println("< Unknown command. Usage: rate idPost rate (rate must be '+1' or '-1')");
             if (responseId == 3) System.err.println("< Post doesn't exists");
             if (responseId == 4) System.err.println("< You can't rate your own post");
             if (responseId == 5) System.err.println("< You've already rated this post");
