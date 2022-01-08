@@ -161,15 +161,15 @@ public class Post implements BufferedSerialization {
     }
 
     /**
-     * Return the number of users who upvoted this post recently and
+     * Return the users who upvoted this post recently and
      * resets the list
      *
-     * @return the number of users who upvoted this post recently
+     * @return the users who upvoted this post recently
      */
-    public synchronized int getRecentUpvotesAndReset() {
-        int upvotes = recentUpvotes.size();
+    public synchronized Set<String> getRecentUpvotesAndReset() {
+        Set<String> recentUpvotesCopy = new HashSet<>(recentUpvotes);
         recentUpvotes.clear();
-        return upvotes;
+        return recentUpvotesCopy;
     }
 
     /**

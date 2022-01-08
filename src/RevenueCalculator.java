@@ -40,17 +40,21 @@ public class RevenueCalculator implements Runnable{
                 for (Post post : posts.values()) {
                     double gain = 0;
                     //Gets recent commenters
-                    Set<String> commenterUsernames = post.getRecentCommenters();
+                    Set<String> contributors = post.getRecentCommenters();
 
                     //Gets the current post iteration
                     int iterations = post.getRevenueIteration();
 
+                    //Gets the usernames of the users who recently contributed
+                    //to the post with an upvote
+                    Set<String> upvoteContributors = post.getRecentUpvotesAndReset();
+
                     //Gets recent upvotes and recent downvotes
-                    int upvotes = post.getRecentUpvotesAndReset();
+                    int upvotes = upvoteContributors.size();
                     int downvotes = post.getRecentDownvotesAndReset();
 
                     //Calculates the revenue of the post
-                    gain = (Math.log(Math.max(upvotes - downvotes, 0) + 1) + Math.log(getSecondLogArg(post, commenterUsernames) + 1)) / iterations;
+                    gain = (Math.log(Math.max(upvotes - downvotes, 0) + 1) + Math.log(getSecondLogArg(post, contributors) + 1)) / iterations;
 
                     //Increments the post iteration
                     post.incrementRevenueIteration();
@@ -62,15 +66,20 @@ public class RevenueCalculator implements Runnable{
                     //Calculates the revenue of the commenters
                     double commentersGain = (gain - authorGain);
                     //Calculates the revenue of the commenter
-                    double singleCommenterGain = commentersGain / commenterUsernames.size();
+                    double singleCommenterGain = commentersGain / contributors.size();
 
                     //If no one gained wincoin, skip to the next post
                     if (authorGain == 0.0 && commentersGain == 0.0) continue;
 
                     //Adds the gain to the author
                     users.get(post.getAuthor()).getWallet().addWincoin(authorGain);
+
+                    //Adds the users who upvoted the post, without duplicates to the list of
+                    //users who receive the wincoins
+                    contributors.addAll(upvoteContributors);
+
                     //Adds the gain to each commenter
-                    for (String user : commenterUsernames) {
+                    for (String user : contributors) {
                         users.get(user).getWallet().addWincoin(singleCommenterGain);
                     }
                     stateChanged.set(true); //State of the server changed
