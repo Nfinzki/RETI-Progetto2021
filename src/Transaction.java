@@ -8,7 +8,7 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.Date;
 
-public class Transaction {
+public class Transaction implements BufferedSerialization {
     private final String action;
     private final Date timestamp;
 

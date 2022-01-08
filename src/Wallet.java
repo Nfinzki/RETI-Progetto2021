@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Wallet {
+public class Wallet implements BufferedSerialization {
     private double wincoin;
     private List<Transaction> transactions;
 

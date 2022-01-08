@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class User implements BufferedSerialization{
+public class User implements BufferedSerialization {
     private final String username;
     private final String password;
     private final String []tag;
