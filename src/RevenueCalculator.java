@@ -65,18 +65,19 @@ public class RevenueCalculator implements Runnable{
                     double authorGain = (gain * authorPercentage) / 100;
                     //Calculates the revenue of the commenters
                     double commentersGain = (gain - authorGain);
-                    //Calculates the revenue of the commenter
-                    double singleCommenterGain = commentersGain / contributors.size();
 
-                    //If no one gained wincoin, skip to the next post
-                    if (authorGain == 0.0 && commentersGain == 0.0) continue;
+                    //If the post didn't generate wincoin, skip to the next post
+                    if (gain == 0.0) continue;
 
                     //Adds the gain to the author
                     users.get(post.getAuthor()).getWallet().addWincoin(authorGain);
 
-                    //Adds the users who upvoted the post, without duplicates to the list of
+                    //Adds the users who upvoted the post, without duplicates, to the list of
                     //users who receive the wincoins
                     contributors.addAll(upvoteContributors);
+
+                    //Calculates the revenue of the commenter
+                    double singleCommenterGain = commentersGain / contributors.size();
 
                     //Adds the gain to each commenter
                     for (String user : contributors) {
