@@ -1,63 +1,127 @@
 [
   {
     "idPost": 0,
-    "author": "nfinzki",
+    "author": "Fabio",
     "postTitle": "Primo post",
-    "postContent": "Questo sarebbe il mio primo post",
+    "postContent": "Questo social è incredibile! Non vedo l'ora di trovare nuovi contenuti",
     "comments": [
       {
         "idComment": 0,
-        "author": "utente",
-        "content": "Questo post non serve a niente, vergognati!"
+        "author": "Tommaso",
+        "content": "Hai proprio ragione Fabio!"
       }
     ],
     "upvotes": [
-      "utente"
+      "Tommaso"
     ],
     "downvotes": [],
     "commentsStats": {
-      "utente": 1
+      "Tommaso": 1
     },
     "rewinner": [],
-    "revenueIteration": 216
+    "revenueIteration": 31
   },
   {
     "idPost": 1,
-    "author": "nfinzki",
-    "postTitle": "Il mio secondo post",
-    "postContent": "Ci sto iniziando a prendere gusto",
+    "author": "Stefano",
+    "postTitle": "Golden Globe",
+    "postContent": "Quest'anno i Golden Globe saranno solo in streaming, peccato",
     "comments": [
       {
-        "idComment": 0,
-        "author": "utente",
-        "content": "Sei senza speranza"
+        "idComment": 1,
+        "author": "Fabio",
+        "content": "Hai ragione..."
       },
       {
-        "idComment": 1,
-        "author": "utente",
-        "content": "Non capisco proprio"
+        "idComment": 2,
+        "author": "Tommaso",
+        "content": "Però è per dei buoni motivi!!!"
       }
     ],
-    "upvotes": [],
+    "upvotes": [
+      "Lorenzo",
+      "Fabio"
+    ],
     "downvotes": [
-      "utente"
+      "Francesco"
     ],
     "commentsStats": {
-      "utente": 2
+      "Fabio": 1,
+      "Tommaso": 1
     },
-    "rewinner": [],
-    "revenueIteration": 216
+    "rewinner": [
+      "Fabio"
+    ],
+    "revenueIteration": 27
   },
   {
     "idPost": 2,
-    "author": "nfinzki",
-    "postTitle": "Prova",
-    "postContent": "Non ci posso credere ci sono riuscito",
-    "comments": [],
-    "upvotes": [],
+    "author": "Francesco",
+    "postTitle": "Benvenuti su Winsome",
+    "postContent": "Spero che tutti quanti apprezzerete questo nuovo social network!",
+    "comments": [
+      {
+        "idComment": 4,
+        "author": "Lorenzo",
+        "content": "Ti ringrazio per il caldo benvenuto!"
+      }
+    ],
+    "upvotes": [
+      "Lorenzo"
+    ],
     "downvotes": [],
-    "commentsStats": {},
+    "commentsStats": {
+      "Lorenzo": 1
+    },
     "rewinner": [],
-    "revenueIteration": 12
+    "revenueIteration": 23
+  },
+  {
+    "idPost": 3,
+    "author": "Lorenzo",
+    "postTitle": "Winsome",
+    "postContent": "Questo social sembra molto molto interessante",
+    "comments": [
+      {
+        "idComment": 3,
+        "author": "Stefano",
+        "content": "Non lo so, non mi ha ancora convinto a pieno"
+      }
+    ],
+    "upvotes": [
+      "Francesco"
+    ],
+    "downvotes": [
+      "Stefano"
+    ],
+    "commentsStats": {
+      "Stefano": 1
+    },
+    "rewinner": [
+      "Francesco"
+    ],
+    "revenueIteration": 19
+  },
+  {
+    "idPost": 5,
+    "author": "Romina",
+    "postTitle": "Collezione Pandora",
+    "postContent": "Non vedo l'ora che esca la nuova collezione Pandora",
+    "comments": [
+      {
+        "idComment": 5,
+        "author": "Vanessa",
+        "content": "Hai proprio ragione, non vedo l\u0027ora!!!"
+      }
+    ],
+    "upvotes": [
+      "Vanessa"
+    ],
+    "downvotes": [],
+    "commentsStats": {
+      "Vanessa": 1
+    },
+    "rewinner": [],
+    "revenueIteration": 10
   }
 ]

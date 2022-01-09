@@ -1,137 +1,252 @@
 [
   {
-    "username": "utente",
-    "password": "2c7f3b7185d9ad24a498661cb137b3ed7fd8cd912f8ba678c38e0c536a2925f4",
+    "username": "Romina",
+    "password": "5be05e6108a1524e1faaf185c30c24c013075f159f6ac30cb9491101772c926b",
     "tag": [
-      "sport",
-      "investimenti",
-      "economia"
+      "moda",
+      "ginnastica"
     ],
     "follower": [
-      "nfinzki"
+      "Vanessa"
     ],
     "followed": [
-      "nfinzki"
+      "Vanessa"
     ],
     "blog": [
-      1
+      5
     ],
     "wallet": {
-      "wincoin": 0.015420725698880483,
+      "wincoin": 0.41110577531281806,
       "transactions": [
         {
-          "action": "+0.010882494111822563 wincoin",
-          "timestamp": "Jan 4, 2022, 9:30:03 PM"
+          "action": "+0.2079441541679836 wincoin",
+          "timestamp": "Jan 9, 2022, 6:55:54 PM"
         },
         {
-          "action": "+0.00453823158705792 wincoin",
-          "timestamp": "Jan 5, 2022, 11:19:19 PM"
+          "action": "+0.20316162114483446 wincoin",
+          "timestamp": "Jan 9, 2022, 6:56:24 PM"
+        }
+      ]
+    }
+  },
+  {
+    "username": "Francesco",
+    "password": "b2e1ba8275520509d86942f84f00276f22bc48165abca416e5dc4d8cbf4d10d1",
+    "tag": [
+      "sport",
+      "tecnologia",
+      "cinema"
+    ],
+    "follower": [
+      "Lorenzo"
+    ],
+    "followed": [
+      "Lorenzo",
+      "Stefano"
+    ],
+    "blog": [
+      2,
+      3
+    ],
+    "wallet": {
+      "wincoin": 0.1801576850133047,
+      "transactions": [
+        {
+          "action": "+0.1039720770839918 wincoin",
+          "timestamp": "Jan 9, 2022, 6:50:24 PM"
+        },
+        {
+          "action": "+0.07618560792931292 wincoin",
+          "timestamp": "Jan 9, 2022, 6:52:24 PM"
+        }
+      ]
+    }
+  },
+  {
+    "username": "Vanessa",
+    "password": "230a07119ee6ab58ff5e58d77a1e72e90cafd95cc95c0b5f9e556119ffcebf80",
+    "tag": [
+      "fimo",
+      "moda",
+      "arte"
+    ],
+    "follower": [
+      "Romina"
+    ],
+    "followed": [
+      "Romina"
+    ],
+    "blog": [],
+    "wallet": {
+      "wincoin": 0.27407051687521206,
+      "transactions": [
+        {
+          "action": "+0.13862943611198905 wincoin",
+          "timestamp": "Jan 9, 2022, 6:55:54 PM"
+        },
+        {
+          "action": "+0.135441080763223 wincoin",
+          "timestamp": "Jan 9, 2022, 6:56:24 PM"
         }
       ]
     }
   },
   {
     "username": "Lorenzo",
-    "password": "dca8a33727bf20407a9fd29bd76030f66396ee6d12871bf4af25f93c88c28041",
+    "password": "da261cd65d3663c8c91498026fd1c3685b51643e4f08d7c65f13a7d0138893b9",
     "tag": [
-      "musica",
-      "sport",
-      "giochi",
-      "macchine",
-      "fumetti"
+      "tecnologia",
+      "cryptovalute",
+      "cinema",
+      "videogiochi"
     ],
-    "follower": [],
+    "follower": [
+      "Francesco",
+      "Stefano"
+    ],
     "followed": [
-      "nfinzki"
+      "Francesco",
+      "Stefano"
     ],
-    "blog": [],
+    "blog": [
+      3
+    ],
     "wallet": {
-      "wincoin": 0.0,
-      "transactions": []
+      "wincoin": 0.3579241035150349,
+      "transactions": [
+        {
+          "action": "+0.03465735902799726 wincoin",
+          "timestamp": "Jan 9, 2022, 6:50:24 PM"
+        },
+        {
+          "action": "+0.06931471805599453 wincoin",
+          "timestamp": "Jan 9, 2022, 6:50:24 PM"
+        },
+        {
+          "action": "+0.20316162114483446 wincoin",
+          "timestamp": "Jan 9, 2022, 6:51:54 PM"
+        },
+        {
+          "action": "+0.05079040528620862 wincoin",
+          "timestamp": "Jan 9, 2022, 6:52:24 PM"
+        }
+      ]
     }
   },
   {
-    "username": "luca",
-    "password": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+    "username": "Fabio",
+    "password": "a5b582965f7702759bd8e2d920777a88772bf861c8bc63ad7399f7522e2a3798",
     "tag": [
+      "videogiochi",
       "musica",
-      "mamma",
-      "film"
+      "calcio",
+      "programmazione"
     ],
-    "follower": [],
-    "followed": [],
-    "blog": [],
+    "follower": [
+      "Tommaso"
+    ],
+    "followed": [
+      "Stefano",
+      "Tommaso"
+    ],
+    "blog": [
+      0,
+      1
+    ],
     "wallet": {
-      "wincoin": 0.0,
-      "transactions": []
+      "wincoin": 0.7528968325696415,
+      "transactions": [
+        {
+          "action": "+0.2079441541679836 wincoin",
+          "timestamp": "Jan 9, 2022, 6:45:24 PM"
+        },
+        {
+          "action": "+0.20316162114483446 wincoin",
+          "timestamp": "Jan 9, 2022, 6:45:54 PM"
+        },
+        {
+          "action": "+0.34179105725682346 wincoin",
+          "timestamp": "Jan 9, 2022, 6:47:24 PM"
+        }
+      ]
     }
   },
   {
     "username": "Stefano",
-    "password": "c7c39f4d0fe0660deb57c29a65c47faefbd596a04a2036d0e1532b9386cecf83",
+    "password": "099ad12f37db9446b26b2f19200b1292d2abd3d6f2f012fe0cbc7522e67fcd97",
     "tag": [
+      "tecnologia",
+      "cinema",
       "musica",
-      "film",
-      "tecnologia",
-      "giochi"
+      "videogiochi"
     ],
     "follower": [
-      "nfinzki"
-    ],
-    "followed": [],
-    "blog": [],
-    "wallet": {
-      "wincoin": 0.0,
-      "transactions": []
-    }
-  },
-  {
-    "username": "mario",
-    "password": "b3a8e0e1f9ab1bfe3a36f231f676f78bb30a519d2b21e6c530c0eee8ebb4a5d0",
-    "tag": [
-      "mamma",
-      "prova",
-      "test"
-    ],
-    "follower": [],
-    "followed": [],
-    "blog": [],
-    "wallet": {
-      "wincoin": 0.0,
-      "transactions": []
-    }
-  },
-  {
-    "username": "nfinzki",
-    "password": "9979dd6df879e4f407fdf2823775c77ba2611c8d8e8a29bf0461d87aef5acaeb",
-    "tag": [
-      "film",
-      "tecnologia",
-      "sport"
-    ],
-    "follower": [
-      "utente",
-      "mario"
+      "Francesco",
+      "Lorenzo",
+      "Fabio",
+      "Tommaso"
     ],
     "followed": [
-      "utente",
-      "Stefano"
+      "Lorenzo",
+      "Tommaso"
     ],
     "blog": [
-      0,
-      1,
-      2
+      1
     ],
     "wallet": {
-      "wincoin": 0.017689841492409444,
+      "wincoin": 0.9032753263352888,
       "transactions": [
         {
-          "action": "+0.010882494111822563 wincoin",
-          "timestamp": "Jan 4, 2022, 9:30:03 PM"
+          "action": "+0.5126865858852354 wincoin",
+          "timestamp": "Jan 9, 2022, 6:47:24 PM"
         },
         {
-          "action": "+0.00680734738058688 wincoin",
-          "timestamp": "Jan 5, 2022, 11:19:19 PM"
+          "action": "+0.20316162114483446 wincoin",
+          "timestamp": "Jan 9, 2022, 6:47:54 PM"
+        },
+        {
+          "action": "+0.0519860385419959 wincoin",
+          "timestamp": "Jan 9, 2022, 6:50:24 PM"
+        },
+        {
+          "action": "+0.135441080763223 wincoin",
+          "timestamp": "Jan 9, 2022, 6:51:54 PM"
+        }
+      ]
+    }
+  },
+  {
+    "username": "Tommaso",
+    "password": "196653bd61433430a93547ba66763173e4db532bc5279722ce434a22cd76203b",
+    "tag": [
+      "calcio",
+      "videogiochi",
+      "anime",
+      "manga"
+    ],
+    "follower": [
+      "Fabio",
+      "Stefano"
+    ],
+    "followed": [
+      "Fabio",
+      "Stefano"
+    ],
+    "blog": [],
+    "wallet": {
+      "wincoin": 0.40951159763843503,
+      "transactions": [
+        {
+          "action": "+0.13862943611198905 wincoin",
+          "timestamp": "Jan 9, 2022, 6:45:24 PM"
+        },
+        {
+          "action": "+0.135441080763223 wincoin",
+          "timestamp": "Jan 9, 2022, 6:45:54 PM"
+        },
+        {
+          "action": "+0.135441080763223 wincoin",
+          "timestamp": "Jan 9, 2022, 6:47:54 PM"
         }
       ]
     }
