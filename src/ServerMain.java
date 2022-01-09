@@ -202,7 +202,7 @@ public class ServerMain {
      * Initializes the registration service
      */
     private static void initializeRMIServices() {
-        SignUpService registerService = new SignUpService(users);
+        SignUpService registerService = new SignUpService(users, stateChanged);
         try {
             //Exports the objects
             RegisterInterface registerStub = (RegisterInterface) UnicastRemoteObject.exportObject(registerService, 0);

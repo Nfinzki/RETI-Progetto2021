@@ -18,10 +18,13 @@ public class RecoverState {
     public static void readPosts(Map<Integer, Post> posts, String postsFile) {
         //Checks if postFile is a file
         File file = new File(postsFile);
-        if (!file.isFile()) {
+        if (!file.isFile() && file.exists()) {
             System.err.println(postsFile + " isn't a file!");
             System.exit(1);
         }
+
+        //Checks if the file is empty
+        if (file.length() == 0) return;
 
         try (FileInputStream fileInputStream = new FileInputStream(postsFile);
              InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream); //Opens the stream to read the file
@@ -101,10 +104,13 @@ public class RecoverState {
     public static void readUsers(Map<String, User> users, String usersFile) {
         //Checks if userFile is a file
         File file = new File(usersFile);
-        if (!file.isFile()) {
+        if (!file.isFile() && file.exists()) {
             System.err.println(usersFile + " isn't a file!");
             System.exit(1);
         }
+
+        //Checks if the file is empty
+        if (file.length() == 0) return;
 
         try (FileInputStream fileInputStream = new FileInputStream(usersFile);
              InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream); //Opens the stream to read the file

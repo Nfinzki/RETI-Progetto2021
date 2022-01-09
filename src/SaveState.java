@@ -32,6 +32,8 @@ public class SaveState implements Runnable{
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 if (stateChanged.get()) { //If the state of the server has changed
+                    System.out.println("Saving state to json files...");
+
                     synchronized (posts) {
                         serverStateToJson(posts, postsFile);
                     }
@@ -40,6 +42,8 @@ public class SaveState implements Runnable{
                     }
                     stateChanged.set(false);
                 }
+
+                System.out.println("Saved correctly");
 
                 //Waits until next iteration
                 Thread.sleep(iterationTime);

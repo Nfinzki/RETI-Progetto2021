@@ -5,12 +5,16 @@
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SignUpService implements RegisterInterface {
     private final Map<String, User> users;
 
-    public SignUpService(Map<String, User> users) {
+    private final AtomicBoolean stateChanged;
+
+    public SignUpService(Map<String, User> users, AtomicBoolean stateChanged) {
         this.users = users;
+        this.stateChanged = stateChanged;
     }
 
     /**
@@ -42,6 +46,7 @@ public class SignUpService implements RegisterInterface {
                 if (users.putIfAbsent(username, new User(username, Hash.bytesToHex(Hash.sha256(username + password)), tags)) != null)
                     return 4; //User already registered
 
+                stateChanged.set(true);
                 return 0; //User registered correctly
             } catch (NoSuchAlgorithmException e) {
                 System.err.println("Error while hashing the password: " + e.getMessage());
