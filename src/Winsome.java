@@ -902,8 +902,10 @@ public class Winsome {
      */
     public void close() {
         //Interrupts the thread who is waiting for multicast notifications
-        multicastThread.interrupt();
-        multicastSocket.close();
+        if (multicastSocket != null) {
+            multicastThread.interrupt();
+            multicastSocket.close();
+        }
 
         //Unexports the object to receive the callbacks for followers updates
         try {
