@@ -266,7 +266,7 @@ public class ServerMain {
                     case "BUFFER-SIZE" -> {
                         bufferSize = Integer.parseInt(line.split("=")[1]);
 
-                        if (bufferSize < 0) {
+                        if (bufferSize < 8) {
                             System.err.println("BUFFER-SIZE cannot be negative");
                             System.exit(1);
                         }
