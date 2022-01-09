@@ -885,15 +885,15 @@ public class Winsome {
             int result;
             //Tries to register the user
             if ((result = register.register(username, password, tags)) != 0) {
-                if (result == -1) System.err.println("< Error server side");
-                if (result == 1) System.err.println("< Password field is empty");
-                if (result == 2 || result == 3) System.err.println("< Registration requires minimum 1 tag and maximum 5");
-                if (result == 4) System.err.println("< User '" + username + "' already registered");
+                if (result == -1) System.out.println("< Error server side");
+                if (result == 1) System.out.println("< Password field is empty");
+                if (result == 2 || result == 3) System.out.println("< Registration requires minimum 1 tag and maximum 5");
+                if (result == 4) System.out.println("< User '" + username + "' already registered");
                 return;
             }
             System.out.println("< " + username + " registered correctly");
         } catch (RemoteException e) {
-            System.err.println("Error while registering new user: " + e.getMessage());
+            System.out.println("< Error while registering new user: " + e.getMessage());
         }
     }
 
