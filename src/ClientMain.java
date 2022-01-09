@@ -88,7 +88,7 @@ public class ClientMain {
 
                 case "list" -> {
                     if (arguments.length != 2 || (!arguments[1].equals("users") && !arguments[1].equals("following") && !arguments[1].equals("followers"))) {
-                        System.err.println("< Invalid command '" + command + "'. Use 'list users', 'list followers' or 'list following'");
+                        System.out.println("< Invalid command '" + command + "'. Use 'list users', 'list followers' or 'list following'");
                         break;
                     }
 
@@ -103,7 +103,7 @@ public class ClientMain {
 
                 case "follow" -> {
                     if (arguments.length != 2) {
-                        System.err.println("< Usage: follow <idUser>");
+                        System.out.println("< Usage: follow <idUser>");
                         break;
                     }
 
@@ -112,7 +112,7 @@ public class ClientMain {
 
                 case "unfollow" -> {
                     if (arguments.length != 2) {
-                        System.err.println("< Usage: unfollow <idUser>");
+                        System.out.println("< Usage: unfollow <idUser>");
                         break;
                     }
 
@@ -121,7 +121,7 @@ public class ClientMain {
 
                 case "blog" -> {
                     if (arguments.length != 1) {
-                        System.err.println("< Usage: blog");
+                        System.out.println("< Usage: blog");
                         break;
                     }
 
@@ -143,7 +143,7 @@ public class ClientMain {
 
                     //Checks if the title or the post content are empty
                     if (title.equals("") || content.equals("")) {
-                        System.err.println("< Usage: post \"Title\" \"Content\"");
+                        System.out.println("< Usage: post \"Title\" \"Content\"");
                         break;
                     }
 
@@ -152,7 +152,7 @@ public class ClientMain {
 
                 case "show" -> {
                     if (arguments.length < 2 || (!arguments[1].equals("feed") && !arguments[1].equals("post"))) {
-                        System.err.println("Invalid command '" + command + "'. Use 'show feed' or 'show post'");
+                        System.out.println("< Invalid command '" + command + "'. Use 'show feed' or 'show post'");
                         break;
                     }
 
@@ -160,7 +160,7 @@ public class ClientMain {
                         winsome.showFeed();
                     } else { //show post
                         if (arguments.length != 3) {
-                            System.err.println("< Usage: show post <idPost>");
+                            System.out.println("< Usage: show post <idPost>");
                             break;
                         }
 
@@ -170,7 +170,7 @@ public class ClientMain {
 
                 case "delete" -> {
                     if (arguments.length != 2) {
-                        System.err.println("< Usage: delete <idPost>");
+                        System.out.println("< Usage: delete <idPost>");
                         break;
                     }
 
@@ -179,7 +179,7 @@ public class ClientMain {
 
                 case "rewin" -> {
                     if (arguments.length != 2) {
-                        System.err.println("< Usage: rewin <idPost>");
+                        System.out.println("< Usage: rewin <idPost>");
                         break;
                     }
 
@@ -188,7 +188,7 @@ public class ClientMain {
 
                 case "rate" -> {
                     if (arguments.length != 3) {
-                        System.err.println("< Usage: rate <idPost> <vote>");
+                        System.out.println("< Usage: rate <idPost> <vote>");
                         break;
                     }
 
@@ -203,7 +203,7 @@ public class ClientMain {
 
                     //Checks if the comment is empty
                     if (comment.equals("")) {
-                        System.err.println("< Usage: comment <idPost> <comment>");
+                        System.out.println("< Usage: comment <idPost> <comment>");
                         break;
                     }
 
@@ -212,7 +212,7 @@ public class ClientMain {
 
                 case "wallet" -> {
                     if (arguments.length > 2 || (arguments.length == 2 && !arguments[1].equals("btc"))) {
-                        System.err.println("Invallid command '" + command + "'. Use 'wallet' or 'wallet btc'");
+                        System.out.println("< Invallid command '" + command + "'. Use 'wallet' or 'wallet btc'");
                         break;
                     }
 
@@ -230,7 +230,34 @@ public class ClientMain {
                     winsome.close();
                 }
 
-                default -> System.err.println("Unknown command: " + command);
+                case "help" -> {
+                    if (arguments.length != 1) {
+                        System.out.println("< Invalid command. Usage: help");
+                        break;
+                    }
+
+                    //Prints help information
+                    System.out.println("< register <username> <password> <tags> - to register a new user (max 5 tags)");
+                    System.out.println("< login <username> <password> - to login in Winsome");
+                    System.out.println("< logout - to logout from winsome");
+                    System.out.println("< list users - to list all the users who have at least one tag in common");
+                    System.out.println("< list followers - to list all the users who are following the logged user");
+                    System.out.println("< list following - to list all the users who are followed by the logged user");
+                    System.out.println("< follow <username> - to follow a user");
+                    System.out.println("< unfollow <username> - to unfollow a user");
+                    System.out.println("< blog - to show all the titles of the posts created by the logged user");
+                    System.out.println("< post <title> <content> - to add a new post in Winsome");
+                    System.out.println("< show feed - to show all the titles of the posts created by users who are followed by the logged user");
+                    System.out.println("< show post <idPost> - to show the a post");
+                    System.out.println("< delete <idPost> - to delete a post from Winsome");
+                    System.out.println("< rate <idPost> <vote> - to rate a post (vote must be +1 or -1)");
+                    System.out.println("< comment <idPost> <comment> - to add a comment to a post");
+                    System.out.println("< wallet - to get the wallet of the current user");
+                    System.out.println("< wallet btc - to get the wallet in BitCoin of the current user");
+                    System.out.println("< exit - to close the client");
+                }
+
+                default -> System.out.println("< Unknown command: " + command);
             }
         }
     }
