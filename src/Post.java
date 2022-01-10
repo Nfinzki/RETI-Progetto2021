@@ -129,12 +129,14 @@ public class Post implements BufferedSerialization {
      * Add the comment to the comment section of the post
      * @param comment comment to add to the comment section
      */
-    public synchronized void addComment(Comment comment) {
-        comments.add(comment);
-        recentCommenters.add(comment.getAuthor());
+    public void addComment(Comment comment) {
+        synchronized (recentCommenters) {
+            comments.add(comment);
+            recentCommenters.add(comment.getAuthor());
 
-        //Increments the number of comment that the author of the comment has done
-        commentsStats.merge(comment.getAuthor(), 1, Integer::sum);
+            //Increments the number of comment that the author of the comment has done
+            commentsStats.merge(comment.getAuthor(), 1, Integer::sum);
+        }
     }
 
     /**
