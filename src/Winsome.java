@@ -907,9 +907,28 @@ public class Winsome {
             multicastSocket.close();
         }
 
-        //Unexports the object to receive the callbacks for followers updates
         try {
+            //Closes the SocketChannel
+            if (socketChannel != null) {
+                socketChannel.close();
+                socketChannel = null;
+            }
+
+            if (currentLoggedUser != null) {
+                //Unregisters from the callback
+                serverCallbackHandler.unregisterForCallback(currentLoggedUser);
+            }
+
+            //Resets the user logged
+            currentLoggedUser = null;
+
+            //Resets the followers list
+            followers = null;
+
+            //Unexports the object to receive the callbacks for followers updates
             UnicastRemoteObject.unexportObject(followerCallback, true);
-        } catch (NoSuchObjectException ignored) {}
+        } catch (IOException e) {
+            System.err.println("Error while closing the API: (" + e.getMessage() + ")");
+        }
     }
 }
