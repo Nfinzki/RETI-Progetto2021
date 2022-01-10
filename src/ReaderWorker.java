@@ -626,7 +626,7 @@ public class ReaderWorker implements Runnable {
 
             //Adds only the post that the user created and discards the rewinned post
             if (post.getAuthor().equals(username))
-                jsonResponse.add(JsonParser.parseString(post.basicInfoToJson()));
+                jsonResponse.add(JsonParser.parseString(post.basicInfoToJson(username)));
         }
 
         //Sets the response
@@ -683,7 +683,7 @@ public class ReaderWorker implements Runnable {
             for (int postId : userFollowed.getBlog()) {
                 //Gets information about the post
                 Post post = posts.get(postId);
-                jsonResponse.add(JsonParser.parseString(post.basicInfoToJson()));
+                jsonResponse.add(JsonParser.parseString(post.basicInfoToJson(usernameFollowed)));
             }
         }
 

@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Wallet implements BufferedSerialization {
     private double wincoin;
-    private List<Transaction> transactions;
+    private final List<Transaction> transactions;
 
     public Wallet() {
         this.wincoin = 0;
@@ -30,8 +30,10 @@ public class Wallet implements BufferedSerialization {
     /**
      * @return the list of transactions
      */
-    public synchronized List<Transaction> getTransactions() {
-        return new ArrayList<>(transactions);
+    public List<Transaction> getTransactions() {
+        synchronized (transactions) {
+            return new ArrayList<>(transactions);
+        }
     }
 
     /**
@@ -40,12 +42,14 @@ public class Wallet implements BufferedSerialization {
      */
     public synchronized void addWincoin(double wincoin) {
         this.wincoin += wincoin;
-        transactions.add(
-                new Transaction( //Creates a new transaction
-                        "+" + wincoin + " wincoin",
-                        new Date(System.currentTimeMillis())
-                )
-        );
+        synchronized (transactions) {
+            transactions.add(
+                    new Transaction( //Creates a new transaction
+                            "+" + wincoin + " wincoin",
+                            new Date(System.currentTimeMillis())
+                    )
+            );
+        }
     }
 
     /**

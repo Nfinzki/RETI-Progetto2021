@@ -100,12 +100,14 @@ public class Post implements BufferedSerialization {
      * @param user username of the user who wants to upvote this post
      * @return true iff the user didn't previously upvoted the post, false otherwise
      */
-    public synchronized boolean addUpvote(String user) {
-        if (upvotes.add(user)) {
-            recentUpvotes.add(user);
-            return true;
-        } else
-            return false;
+    public boolean addUpvote(String user) {
+        synchronized (upvotes) {
+            if (upvotes.add(user)) {
+                recentUpvotes.add(user);
+                return true;
+            } else
+                return false;
+        }
     }
 
     /**
@@ -113,12 +115,14 @@ public class Post implements BufferedSerialization {
      * @param user username of the user who wants to downvote this post
      * @return true iff the user didn't previously downvoted the post, false otherwise
      */
-    public synchronized boolean addDownvote(String user) {
-        if (downvotes.add(user)) {
-            recentDownvotes.add(user);
-            return true;
-        } else
-            return false;
+    public boolean addDownvote(String user) {
+        synchronized (downvotes) {
+            if (downvotes.add(user)) {
+                recentDownvotes.add(user);
+                return true;
+            } else
+                return false;
+        }
     }
 
     /**
@@ -139,7 +143,7 @@ public class Post implements BufferedSerialization {
      * @return true iff the user didn't already rewinned the post, false otherwise
      */
     public boolean addRewinner(String username) {
-        return  rewinner.add(username);
+        return rewinner.add(username);
     }
 
     /**
@@ -166,10 +170,12 @@ public class Post implements BufferedSerialization {
      *
      * @return the users who upvoted this post recently
      */
-    public synchronized Set<String> getRecentUpvotesAndReset() {
-        Set<String> recentUpvotesCopy = new HashSet<>(recentUpvotes);
-        recentUpvotes.clear();
-        return recentUpvotesCopy;
+    public Set<String> getRecentUpvotesAndReset() {
+        synchronized (recentUpvotes) {
+            Set<String> recentUpvotesCopy = new HashSet<>(recentUpvotes);
+            recentUpvotes.clear();
+            return recentUpvotesCopy;
+        }
     }
 
     /**
@@ -178,10 +184,12 @@ public class Post implements BufferedSerialization {
      *
      * @return the number of users who downvoted this post recently
      */
-    public synchronized int getRecentDownvotesAndReset() {
-        int downvotes = recentDownvotes.size();
-        recentDownvotes.clear();
-        return downvotes;
+    public int getRecentDownvotesAndReset() {
+        synchronized (recentDownvotes){
+            int downvotes = recentDownvotes.size();
+            recentDownvotes.clear();
+            return downvotes;
+        }
     }
 
     /**
@@ -189,11 +197,13 @@ public class Post implements BufferedSerialization {
      *
      * @return the recent comments
      */
-    public synchronized Set<String> getRecentCommenters() {
-        Set<String> copy = new HashSet<>(recentCommenters);
-        recentCommenters.clear();
+    public Set<String> getRecentCommenters() {
+        synchronized (recentCommenters) {
+            Set<String> copy = new HashSet<>(recentCommenters);
+            recentCommenters.clear();
 
-        return copy;
+            return copy;
+        }
     }
 
     /**
@@ -246,16 +256,21 @@ public class Post implements BufferedSerialization {
     /**
      * @return the list of the users who rewinned this post
      */
-    public synchronized Set<String> getRewinner() {
-        return new HashSet<>(rewinner);
+    public Set<String> getRewinner() {
+        synchronized (rewinner) {
+            return new HashSet<>(rewinner);
+        }
     }
 
     /**
      * Returns post id, author and the title in json format
      * @return basics information about the post in json format
      */
-    public String basicInfoToJson() {
-        return "{\"idPost\": " + idPost + ", \"author\": \"" + author + "\", \"postTitle\": \"" + postTitle + "\" }";
+    public String basicInfoToJson(String username) {
+        String response = "{\"idPost\": " + idPost + ", \"author\": \"" + author + "\", \"postTitle\": \"" + postTitle;
+        if (rewinner.contains(username)) response += " [rewinned by " + username + "]";
+        response += "\"}";
+        return response;
     }
 
     /**

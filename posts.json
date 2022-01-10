@@ -19,7 +19,7 @@
       "Tommaso": 1
     },
     "rewinner": [],
-    "revenueIteration": 35
+    "revenueIteration": 41
   },
   {
     "idPost": 1,
@@ -52,7 +52,7 @@
     "rewinner": [
       "Fabio"
     ],
-    "revenueIteration": 31
+    "revenueIteration": 37
   },
   {
     "idPost": 2,
@@ -74,7 +74,7 @@
       "Lorenzo": 1
     },
     "rewinner": [],
-    "revenueIteration": 27
+    "revenueIteration": 33
   },
   {
     "idPost": 3,
@@ -100,7 +100,7 @@
     "rewinner": [
       "Francesco"
     ],
-    "revenueIteration": 23
+    "revenueIteration": 29
   },
   {
     "idPost": 5,
@@ -122,6 +122,6 @@
       "Vanessa": 1
     },
     "rewinner": [],
-    "revenueIteration": 14
+    "revenueIteration": 20
   }
 ]

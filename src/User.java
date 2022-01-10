@@ -77,8 +77,10 @@ public class User implements BufferedSerialization {
     /**
      * @return list of followed user
      */
-    public synchronized Set<String> getFollowed() {
-        return new HashSet<>(followed);
+    public Set<String> getFollowed() {
+        synchronized (followed) {
+            return new HashSet<>(followed);
+        }
     }
 
     /**
@@ -103,7 +105,9 @@ public class User implements BufferedSerialization {
      * @return true iff the post wasn't already added, false otherwise
      */
     public boolean addPost(int postId) {
-        return blog.add(postId);
+        synchronized (blog) {
+            return blog.add(postId);
+        }
     }
 
     /**
@@ -111,7 +115,9 @@ public class User implements BufferedSerialization {
      * @return true if this user owns the post identified with idPost, false otherwise
      */
     public boolean ownsPost(int idPost) {
-        return blog.contains(idPost);
+        synchronized (blog) {
+            return blog.contains(idPost);
+        }
     }
 
     /**
@@ -119,7 +125,9 @@ public class User implements BufferedSerialization {
      * @param idPost post id
      */
     public void removePost(int idPost) {
-        blog.remove(idPost);
+        synchronized (blog) {
+            blog.remove(idPost);
+        }
     }
 
     /**
@@ -128,7 +136,9 @@ public class User implements BufferedSerialization {
      * @return true iff this user didn't follow that user, false otherwise
      */
     public boolean addFollowed(String followed) {
-        return this.followed.add(followed);
+        synchronized (this.followed) {
+            return this.followed.add(followed);
+        }
     }
 
     /**
@@ -137,7 +147,9 @@ public class User implements BufferedSerialization {
      * @return true iff this user followed that user, false otherwise
      */
     public boolean removeFollowed(String followed) {
-        return this.followed.remove(followed);
+        synchronized (this.followed) {
+            return this.followed.remove(followed);
+        }
     }
 
     /**
@@ -146,7 +158,9 @@ public class User implements BufferedSerialization {
      * @return true iff this user wasn't already followed by the new follower, false otherwise
      */
     public boolean addFollower(String follower) {
-        return this.follower.add(follower);
+        synchronized (this.follower) {
+            return this.follower.add(follower);
+        }
     }
 
     /**
@@ -155,7 +169,9 @@ public class User implements BufferedSerialization {
      * @return true iff this user was followed by the follower to remove, false otherwise
      */
     public boolean removeFollower(String follower) {
-        return this.follower.remove(follower);
+        synchronized (this.follower) {
+            return this.follower.remove(follower);
+        }
     }
 
     /**
@@ -169,23 +185,29 @@ public class User implements BufferedSerialization {
     /**
      * @return a string which contains the follower list as json format
      */
-    public synchronized String getFollowersAsJson() {
+    public String getFollowersAsJson() {
         Gson gson = new Gson();
-        return gson.toJson(follower);
+        synchronized (follower) {
+            return gson.toJson(follower);
+        }
     }
 
     /**
      * @return a set which contains the following list
      */
-    public synchronized Set<String> getFollowing() {
-        return new HashSet<>(followed);
+    public Set<String> getFollowing() {
+        synchronized (followed) {
+            return new HashSet<>(followed);
+        }
     }
 
     /**
      * @return a set which contains the blog
      */
-    public synchronized Set<Integer> getBlog() {
-        return new HashSet<>(blog);
+    public Set<Integer> getBlog() {
+        synchronized (blog) {
+            return new HashSet<>(blog);
+        }
     }
 
     /**
@@ -198,9 +220,11 @@ public class User implements BufferedSerialization {
     /**
      * @return a string which contains the wallet as json format
      */
-    public synchronized String getWalletAsJson() {
+    public String getWalletAsJson() {
         Gson gson = new Gson();
-        return gson.toJson(wallet);
+        synchronized (wallet) {
+            return gson.toJson(wallet);
+        }
     }
 
     /**
