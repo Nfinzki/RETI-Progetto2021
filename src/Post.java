@@ -101,7 +101,7 @@ public class Post implements BufferedSerialization {
      * @return true iff the user didn't previously upvoted the post, false otherwise
      */
     public boolean addUpvote(String user) {
-        synchronized (upvotes) {
+        synchronized (recentUpvotes) {
             if (upvotes.add(user)) {
                 recentUpvotes.add(user);
                 return true;
@@ -116,7 +116,7 @@ public class Post implements BufferedSerialization {
      * @return true iff the user didn't previously downvoted the post, false otherwise
      */
     public boolean addDownvote(String user) {
-        synchronized (downvotes) {
+        synchronized (recentDownvotes) {
             if (downvotes.add(user)) {
                 recentDownvotes.add(user);
                 return true;

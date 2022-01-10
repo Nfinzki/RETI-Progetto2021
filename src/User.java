@@ -105,9 +105,7 @@ public class User implements BufferedSerialization {
      * @return true iff the post wasn't already added, false otherwise
      */
     public boolean addPost(int postId) {
-        synchronized (blog) {
-            return blog.add(postId);
-        }
+        return blog.add(postId);
     }
 
     /**
@@ -115,9 +113,7 @@ public class User implements BufferedSerialization {
      * @return true if this user owns the post identified with idPost, false otherwise
      */
     public boolean ownsPost(int idPost) {
-        synchronized (blog) {
-            return blog.contains(idPost);
-        }
+        return blog.contains(idPost);
     }
 
     /**
@@ -125,9 +121,7 @@ public class User implements BufferedSerialization {
      * @param idPost post id
      */
     public void removePost(int idPost) {
-        synchronized (blog) {
-            blog.remove(idPost);
-        }
+        blog.remove(idPost);
     }
 
     /**
@@ -136,9 +130,7 @@ public class User implements BufferedSerialization {
      * @return true iff this user didn't follow that user, false otherwise
      */
     public boolean addFollowed(String followed) {
-        synchronized (this.followed) {
-            return this.followed.add(followed);
-        }
+        return this.followed.add(followed);
     }
 
     /**
@@ -147,9 +139,7 @@ public class User implements BufferedSerialization {
      * @return true iff this user followed that user, false otherwise
      */
     public boolean removeFollowed(String followed) {
-        synchronized (this.followed) {
-            return this.followed.remove(followed);
-        }
+        return this.followed.remove(followed);
     }
 
     /**
@@ -158,9 +148,7 @@ public class User implements BufferedSerialization {
      * @return true iff this user wasn't already followed by the new follower, false otherwise
      */
     public boolean addFollower(String follower) {
-        synchronized (this.follower) {
-            return this.follower.add(follower);
-        }
+        return this.follower.add(follower);
     }
 
     /**
@@ -169,9 +157,7 @@ public class User implements BufferedSerialization {
      * @return true iff this user was followed by the follower to remove, false otherwise
      */
     public boolean removeFollower(String follower) {
-        synchronized (this.follower) {
-            return this.follower.remove(follower);
-        }
+        return this.follower.remove(follower);
     }
 
     /**
