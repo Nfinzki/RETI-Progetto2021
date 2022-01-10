@@ -280,9 +280,23 @@ public class ClientMain {
 
                     case "SERVER-IP" -> serverIP = line.split("=")[1];
 
-                    case "TCP-PORT" -> tcpPort = Integer.parseInt(line.split("=")[1]);
+                    case "TCP-PORT" -> {
+                        tcpPort = Integer.parseInt(line.split("=")[1]);
 
-                    case "BUFFER-SIZE" -> bufferSize = Integer.parseInt(line.split("=")[1]);
+                        if (tcpPort < 0 || tcpPort > 65535) {
+                            System.err.println("TCP-PORT must be between 0 and 65535");
+                            System.exit(1);
+                        }
+                    }
+
+                    case "BUFFER-SIZE" -> {
+                        bufferSize = Integer.parseInt(line.split("=")[1]);
+
+                        if (bufferSize < 16) {
+                            System.err.println("BUFFER-SIZE should be at least 16");
+                            System.exit(1);
+                        }
+                    }
 
                     case "RMI-CALLBACK" -> callbackServiceName = line.split("=")[1];
 
