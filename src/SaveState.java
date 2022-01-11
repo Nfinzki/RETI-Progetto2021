@@ -34,16 +34,16 @@ public class SaveState implements Runnable{
                 if (stateChanged.get()) { //If the state of the server has changed
                     System.out.println("Saving state to json files...");
 
-                    synchronized (posts) {
-                        serverStateToJson(posts, postsFile);
-                    }
-                    synchronized (users) {
-                        serverStateToJson(users, usersFile);
-                    }
                     stateChanged.set(false);
-                }
+                    synchronized (users) {
+                        synchronized (posts) {
+                            serverStateToJson(posts, postsFile);
+                            serverStateToJson(users, usersFile);
+                        }
+                    }
 
-                System.out.println("Saved correctly");
+                    System.out.println("Saved correctly");
+                }
 
                 //Waits until next iteration
                 Thread.sleep(iterationTime);
