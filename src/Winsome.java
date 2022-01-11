@@ -927,8 +927,10 @@ public class Winsome {
             //Resets the followers list
             followers = null;
 
-            //Unexports the object to receive the callbacks for followers updates
-            UnicastRemoteObject.unexportObject(followerCallback, true);
+            if (followerCallback != null) {
+                //Unexports the object to receive the callbacks for followers updates
+                UnicastRemoteObject.unexportObject(followerCallback, true);
+            }
         } catch (IOException e) {
             System.err.println("Error while closing the API: (" + e.getMessage() + ")");
         }
