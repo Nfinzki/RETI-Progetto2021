@@ -50,6 +50,8 @@ public class ServerMain {
 
     private static int automaticLogoutCheckTime = 25000;
 
+    private static int threadPoolTimeout = 10000;
+
     public static void main(String []args) {
         //Checks if is specified a different configuration file
         if (args.length == 1) configurationFile = args[0];
@@ -107,7 +109,7 @@ public class ServerMain {
         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
         //Creates the ShutdownHook to terminate the server correctly
-        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool, activeThread, stateChanged, selector);
+        ShutdownHandler shutdownHandler = new ShutdownHandler(usersFile, postsFile, users, posts, threadPool, activeThread, stateChanged, selector, threadPoolTimeout);
 
         //Opens the server
         multiplexChannels(threadPool, selector);
@@ -297,6 +299,15 @@ public class ServerMain {
 
                         if (keepAliveTime < 0) {
                             System.err.println("KEEPALIVE cannot be negative");
+                            System.exit(1);
+                        }
+                    }
+
+                    case "THREADPOOL-TIMEOUT" -> {
+                        threadPoolTimeout = Integer.parseInt(line.split("=")[1]);
+
+                        if (threadPoolTimeout < 0) {
+                            System.err.println("THREADPOOL-TIMEOUT cannot be negative");
                             System.exit(1);
                         }
                     }

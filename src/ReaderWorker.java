@@ -16,8 +16,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -414,9 +412,11 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
+        //Gets the information about the user who made the request
+        User user = users.get(username);
         try {
             //Performs the actions for following a user
-            if (users.get(username).addFollowed(userToFollow) && userToFollowObj.addFollower(username)) {
+            if (user.addFollowed(userToFollow) && userToFollowObj.addFollower(username)) {
                 stateChanged.set(true); //State of the server has changed
                 setResponse(0);
 
@@ -455,9 +455,11 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
+        //Gets the information about the user who made the request
+        User user = users.get(username);
         try {
             //Performs the actions for unfollowing a user
-            if (users.get(username).removeFollowed(userToUnfollow) && userToUnfollowObj.removeFollower(username)) {
+            if (user.removeFollowed(userToUnfollow) && userToUnfollowObj.removeFollower(username)) {
                 stateChanged.set(true); //State of the server has changed
                 setResponse(0);
 

@@ -10,6 +10,7 @@ import java.nio.channels.Selector;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ShutdownHandler {
@@ -22,7 +23,9 @@ public class ShutdownHandler {
     private final AtomicBoolean stateChanged;
     private final Selector selector;
 
-    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, List<Thread> activeThreads, AtomicBoolean stateChanged, Selector selector) {
+    private final int threadPoolTimeout;
+
+    public ShutdownHandler(String usersFile, String postsFile, Map<String, User> users, Map<Integer, Post> posts, ThreadPoolExecutor threadPool, List<Thread> activeThreads, AtomicBoolean stateChanged, Selector selector, int threadPoolTimeout) {
         this.usersFile = usersFile;
         this.postsFile = postsFile;
         this.users = users;
@@ -31,6 +34,7 @@ public class ShutdownHandler {
         this.activeThreads = activeThreads;
         this.stateChanged = stateChanged;
         this.selector = selector;
+        this.threadPoolTimeout = threadPoolTimeout;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
@@ -44,6 +48,14 @@ public class ShutdownHandler {
                 for (Thread thread : activeThreads)
                     thread.interrupt();
 
+                try {
+                    boolean terminated = threadPool.awaitTermination(threadPoolTimeout, TimeUnit.MILLISECONDS);
+                    if (!terminated) threadPool.shutdownNow();
+                } catch (InterruptedException e) {
+                    //If threadpool isn't terminated forces the shutdown
+                    if (!threadPool.isTerminated()) threadPool.shutdownNow();
+                }
+
                 //If the state changed saves the state of the server
                 if (stateChanged.get()) {
                     //Saves the server state
@@ -53,8 +65,6 @@ public class ShutdownHandler {
                     stateChanged.set(false);
                 }
 
-                //If threadpool isn't terminated forces the shutdown
-                if (!threadPool.isTerminated()) threadPool.shutdownNow();
             }
         });
 
