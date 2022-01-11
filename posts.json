@@ -19,7 +19,7 @@
       "Tommaso": 1
     },
     "rewinner": [],
-    "revenueIteration": 67
+    "revenueIteration": 71
   },
   {
     "idPost": 1,
@@ -28,14 +28,14 @@
     "postContent": "Quest'anno i Golden Globe saranno solo in streaming, peccato",
     "comments": [
       {
-        "idComment": 1,
-        "author": "Fabio",
-        "content": "Hai ragione..."
-      },
-      {
         "idComment": 2,
         "author": "Tommaso",
         "content": "Però è per dei buoni motivi!!!"
+      },
+      {
+        "idComment": 1,
+        "author": "Fabio",
+        "content": "Hai ragione..."
       }
     ],
     "upvotes": [
@@ -52,7 +52,7 @@
     "rewinner": [
       "Fabio"
     ],
-    "revenueIteration": 63
+    "revenueIteration": 67
   },
   {
     "idPost": 2,
@@ -74,7 +74,7 @@
       "Lorenzo": 1
     },
     "rewinner": [],
-    "revenueIteration": 59
+    "revenueIteration": 63
   },
   {
     "idPost": 3,
@@ -100,7 +100,7 @@
     "rewinner": [
       "Francesco"
     ],
-    "revenueIteration": 55
+    "revenueIteration": 59
   },
   {
     "idPost": 5,
@@ -122,7 +122,7 @@
       "Vanessa": 1
     },
     "rewinner": [],
-    "revenueIteration": 46
+    "revenueIteration": 50
   },
   {
     "idPost": 6,
@@ -144,6 +144,18 @@
     "rewinner": [
       "Fabio"
     ],
-    "revenueIteration": 15
+    "revenueIteration": 19
+  },
+  {
+    "idPost": 7,
+    "author": "Francesco",
+    "postTitle": "Winsome Update",
+    "postContent": "Vedo che Winsome piano piano sta ingranando, ne sono contento",
+    "comments": [],
+    "upvotes": [],
+    "downvotes": [],
+    "commentsStats": {},
+    "rewinner": [],
+    "revenueIteration": 2
   }
 ]

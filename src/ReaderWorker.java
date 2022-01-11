@@ -537,12 +537,17 @@ public class ReaderWorker implements Runnable {
 
         //Creates a new post
         Post newPost = new Post(username, title, content);
-        //Adds the post to the server state
-        posts.put(newPost.getIdPost(), newPost);
-        //Gets the information of the user
-        User user = users.get(username);
-        //Adds the post in the user post list
-        user.addPost(newPost.getIdPost());
+
+        synchronized (users) {
+            synchronized (posts) {
+            //Adds the post to the server state
+            posts.put(newPost.getIdPost(), newPost);
+            //Gets the information of the user
+            User user = users.get(username);
+            //Adds the post in the user post list
+            user.addPost(newPost.getIdPost());
+            }
+        }
 
         stateChanged.set(true); //States of the server has changed
         setResponse(0);
@@ -575,16 +580,20 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
-        //Removes the post from the state of the server
-        posts.remove(idPost);
-        //Removes the post from the post list of the user
-        user.removePost(idPost);
+        synchronized (users) {
+            synchronized (posts) {
+                //Removes the post from the state of the server
+                posts.remove(idPost);
+                //Removes the post from the post list of the user
+                user.removePost(idPost);
 
-        //Removes the post from the post list of all the user who
-        //rewinned the post
-        for (String rewinner : post.getRewinner()) {
-            User rewinnerUser = users.get(rewinner);
-            rewinnerUser.removePost(idPost);
+                //Removes the post from the post list of all the user who
+                //rewinned the post
+                for (String rewinner : post.getRewinner()) {
+                    User rewinnerUser = users.get(rewinner);
+                    rewinnerUser.removePost(idPost);
+                }
+            }
         }
 
         stateChanged.set(true); //States of the server has changed
@@ -730,13 +739,17 @@ public class ReaderWorker implements Runnable {
         //Gets the information about the user
         User user = users.get(username);
 
-        if (user.addPost(post.getIdPost())) { //Adds the post to the user post list
-            post.addRewinner(username); //Adds the user to the rewinner list
+        synchronized (users) {
+            synchronized (posts) {
+                if (user.addPost(post.getIdPost())) { //Adds the post to the user post list
+                    post.addRewinner(username); //Adds the user to the rewinner list
 
-            stateChanged.set(true); //State of the server changed
-            setResponse(0);
-        } else //Post already rewinned
-            setResponse(3);
+                    stateChanged.set(true); //State of the server changed
+                    setResponse(0);
+                } else //Post already rewinned
+                    setResponse(3);
+            }
+        }
     }
 
     /**
