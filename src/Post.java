@@ -149,6 +149,15 @@ public class Post implements BufferedSerialization {
     }
 
     /**
+     * Remove the username from the rewinner list
+     * @param username username of the user that rewinned the post
+     * @return true iff the user rewinned the post, false otherwise
+     */
+    public boolean removeRewinner(String username) {
+        return rewinner.remove(username);
+    }
+
+    /**
      * Checks if the user upvoted this post
      * @param user username of the user to search
      * @return true iff user upvoted this post, false otherwise

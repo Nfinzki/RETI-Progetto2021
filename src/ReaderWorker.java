@@ -575,6 +575,21 @@ public class ReaderWorker implements Runnable {
         //Gets the information of the user
         User user = users.get(username);
 
+        //Checks if the user is a rewinner
+        if (post.getRewinner().contains(username)) {
+            synchronized (users) {
+                synchronized (posts) {
+                    //Removes the username from the rewinner list
+                    post.removeRewinner(username);
+                    //Removes the post from the blog of the user
+                    user.removePost(post.getIdPost());
+                }
+            }
+            stateChanged.set(true); //Server state changed
+            setResponse(0);
+            return;
+        }
+
         if (!user.ownsPost(idPost)) { //The user is not the author of the post
             setResponse(3);
             return;
