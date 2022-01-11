@@ -37,7 +37,7 @@ public class ServerMain {
     private static Map<String, User> users;
     private static Map<Integer, Post> posts;
     private static Map<String, Socket> loggedUsers;
-    private static Set<Registable> readyToBeRegistered;
+    private static Set<Registrable> readyToBeRegistered;
 
     private static CallbackHandler callbackHandler;
     private static String callbackHandlerService = "RMI-FOLLOWER-CALLBACK";
@@ -136,7 +136,7 @@ public class ServerMain {
                 if (!selector.isOpen()) break; //Thread termination
 
                 //Re-registers the channels ready to be served again
-                for (Registable r : readyToBeRegistered) {
+                for (Registrable r : readyToBeRegistered) {
                     try {
                         //Re-registers the channel
                         r.getClientChannel().register(selector, r.getOperation(), r.getByteBuffer());

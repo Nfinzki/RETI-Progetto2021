@@ -204,8 +204,9 @@ public class Winsome {
 
             if (responseId == 0) System.out.println("< " + idUser + " followed");
             if (responseId == 1) System.err.println("< There is no user logged in");
-            if (responseId == 2) System.err.println("< User " + idUser + " doesn't exists");
-            if (responseId == 3) System.err.println("< User " + idUser + " already followed");
+            if (responseId == 2) System.out.println("< You can't follow yourself");
+            if (responseId == 3) System.err.println("< User " + idUser + " doesn't exists");
+            if (responseId == 4) System.err.println("< User " + idUser + " already followed");
 
         } catch (IOException e) {
             System.err.println("Error while following user (" + e.getMessage() + ")");
@@ -232,8 +233,9 @@ public class Winsome {
 
             if (responseId == 0) System.out.println("< " + idUser + " unfollowed");
             if (responseId == 1) System.err.println("< There is no user logged in");
-            if (responseId == 2) System.err.println("< User " + idUser + " doesn't exists");
-            if (responseId == 3) System.err.println("< User " + idUser + " already not followed");
+            if (responseId == 2) System.out.println("< You can't unfollow yourself");
+            if (responseId == 3) System.err.println("< User " + idUser + " doesn't exists");
+            if (responseId == 4) System.err.println("< User " + idUser + " already not followed");
 
         } catch (IOException e) {
             System.err.println("Error while unfollowing user (" + e.getMessage() + ")");

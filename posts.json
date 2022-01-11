@@ -19,7 +19,7 @@
       "Tommaso": 1
     },
     "rewinner": [],
-    "revenueIteration": 41
+    "revenueIteration": 67
   },
   {
     "idPost": 1,
@@ -52,7 +52,7 @@
     "rewinner": [
       "Fabio"
     ],
-    "revenueIteration": 37
+    "revenueIteration": 63
   },
   {
     "idPost": 2,
@@ -74,7 +74,7 @@
       "Lorenzo": 1
     },
     "rewinner": [],
-    "revenueIteration": 33
+    "revenueIteration": 59
   },
   {
     "idPost": 3,
@@ -100,7 +100,7 @@
     "rewinner": [
       "Francesco"
     ],
-    "revenueIteration": 29
+    "revenueIteration": 55
   },
   {
     "idPost": 5,
@@ -122,6 +122,28 @@
       "Vanessa": 1
     },
     "rewinner": [],
-    "revenueIteration": 20
+    "revenueIteration": 46
+  },
+  {
+    "idPost": 6,
+    "author": "Tommaso",
+    "postTitle": "Giochi di carte",
+    "postContent": "Adoro i giochi di carte, mi piace costruire mazzi e giocare",
+    "comments": [
+      {
+        "idComment": 6,
+        "author": "Stefano",
+        "content": "Io sinceramente non vedo il diverimento in tutto ciò"
+      }
+    ],
+    "upvotes": [],
+    "downvotes": [],
+    "commentsStats": {
+      "Stefano": 1
+    },
+    "rewinner": [
+      "Fabio"
+    ],
+    "revenueIteration": 15
   }
 ]

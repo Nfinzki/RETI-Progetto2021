@@ -16,6 +16,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,7 +31,7 @@ public class ReaderWorker implements Runnable {
     private final Map<Integer, Post> posts;
     private final CallbackHandler callbackHandler;
     private final Map<String, Socket> loggedUsers;
-    private final Set<Registable> readyToBeRegistered;
+    private final Set<Registrable> readyToBeRegistered;
 
     private final Selector selector;
 
@@ -37,7 +39,7 @@ public class ReaderWorker implements Runnable {
 
     private JsonElement jsonElement = null;
 
-    public ReaderWorker(SelectionKey key, Map<String, User> users, Map<Integer, Post> posts, Map<String, Socket> loggedUsers, CallbackHandler callbackHandler, Set<Registable> readyToBeRegistered, Selector selector, AtomicBoolean stateChanged) {
+    public ReaderWorker(SelectionKey key, Map<String, User> users, Map<Integer, Post> posts, Map<String, Socket> loggedUsers, CallbackHandler callbackHandler, Set<Registrable> readyToBeRegistered, Selector selector, AtomicBoolean stateChanged) {
         this.key = key;
         this.users = users;
         this.posts = posts;
@@ -230,7 +232,7 @@ public class ReaderWorker implements Runnable {
         }
 
         //Marks the client as ready
-        readyToBeRegistered.add(new Registable(client, SelectionKey.OP_WRITE, byteBuffer, jsonElement));
+        readyToBeRegistered.add(new Registrable(client, SelectionKey.OP_WRITE, byteBuffer, jsonElement));
         //Wakes up the selector to re-register the key
         selector.wakeup();
     }
@@ -399,10 +401,16 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
+        //Checks if the user is trying to follow himself
+        if (username.equals(userToFollow)) {
+            setResponse(2);
+            return;
+        }
+
         //Gets the information of the user to follow
         User userToFollowObj = users.get(userToFollow);
         if (userToFollowObj == null) { //User not registered
-            setResponse(2);
+            setResponse(3);
             return;
         }
 
@@ -415,7 +423,7 @@ public class ReaderWorker implements Runnable {
                 //Notifies the user followed that has a new follower
                 callbackHandler.notifyNewFollower(userToFollow, username);
             } else //User already followed that user
-                setResponse(3);
+                setResponse(4);
         } catch (RemoteException e) {
             System.err.println("Error while notifying the new follower: " + e.getMessage());
             try {client.close();} catch (Exception ignored) {}
@@ -434,10 +442,16 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
+        //Checks if the user is trying to follow himself
+        if (username.equals(userToUnfollow)) {
+            setResponse(2);
+            return;
+        }
+
         //Gets the information of the user to unfollow
         User userToUnfollowObj = users.get(userToUnfollow);
         if (userToUnfollowObj == null) { //User not registered
-            setResponse(2);
+            setResponse(3);
             return;
         }
 
@@ -450,7 +464,7 @@ public class ReaderWorker implements Runnable {
                 //Notifies the user unfollowed that he has lost a follower
                 callbackHandler.notifyLostFollower(userToUnfollow, username);
             } else //User wasn't following that user
-                setResponse(3);
+                setResponse(4);
         } catch (RemoteException e) {
             System.err.println("Error while notifying the unfollow: " + e.getMessage());
             try {client.close();} catch (Exception ignored) {}
@@ -748,8 +762,26 @@ public class ReaderWorker implements Runnable {
             return;
         }
 
-        //Checks if the user doesn't follow the author of the post
-        if (!users.get(username).follows(post.getAuthor())) {
+        //Checks if the post is rewinned by a user followed
+        //by the user who made the request
+        User user = users.get(username);
+        boolean causedByRewinner = false;
+        for (String rewinner : post.getRewinner()) {
+            for (String userFollowed : user.getFollowed()) {
+                if (rewinner.equals(userFollowed)) {
+                    causedByRewinner = true;
+                    break;
+                }
+            }
+
+            if (causedByRewinner) break;
+        }
+
+        //Checks if the user doesn't have the post in his feed.
+        //This means that the user doesn't follow the author of the post
+        //and this post isn't rewinned by one of the user who are followed by the
+        //user who made the request
+        if (!user.follows(post.getAuthor()) && !causedByRewinner) {
             setResponse(4);
             return;
         }

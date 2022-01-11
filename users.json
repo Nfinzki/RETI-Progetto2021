@@ -143,6 +143,7 @@
       "programmazione"
     ],
     "follower": [
+      "Stefano",
       "Tommaso"
     ],
     "followed": [
@@ -151,7 +152,8 @@
     ],
     "blog": [
       0,
-      1
+      1,
+      6
     ],
     "wallet": {
       "wincoin": 0.7528968325696415,
@@ -188,7 +190,7 @@
     ],
     "followed": [
       "Lorenzo",
-      "Tommaso"
+      "Fabio"
     ],
     "blog": [
       1
@@ -225,14 +227,15 @@
       "manga"
     ],
     "follower": [
-      "Fabio",
-      "Stefano"
+      "Fabio"
     ],
     "followed": [
       "Fabio",
       "Stefano"
     ],
-    "blog": [],
+    "blog": [
+      6
+    ],
     "wallet": {
       "wincoin": 0.40951159763843503,
       "transactions": [

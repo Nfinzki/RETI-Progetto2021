@@ -16,13 +16,13 @@ public class WriterWorker implements Runnable {
     private final SocketChannel client;
     private final ByteBuffer byteBuffer;
 
-    private final Set<Registable> readyToBeRegistered;
+    private final Set<Registrable> readyToBeRegistered;
 
     private final Selector selector;
 
     private final JsonElement jsonElement;
 
-    public WriterWorker(SelectionKey key, Set<Registable> readyToBeRegistered, Selector selector, JsonElement jsonElement) {
+    public WriterWorker(SelectionKey key, Set<Registrable> readyToBeRegistered, Selector selector, JsonElement jsonElement) {
         this.key = key;
         this.readyToBeRegistered = readyToBeRegistered;
         this.selector = selector;
@@ -78,7 +78,7 @@ public class WriterWorker implements Runnable {
         }
 
         //Marks the client as ready
-        readyToBeRegistered.add(new Registable(client, SelectionKey.OP_READ, byteBuffer, null));
+        readyToBeRegistered.add(new Registrable(client, SelectionKey.OP_READ, byteBuffer, null));
         //Wakes up the selector to re-register the key
         selector.wakeup();
     }
